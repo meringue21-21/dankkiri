@@ -63,6 +63,15 @@ h1,h2,h3{text-wrap:balance}
 .btn[disabled]{opacity:.45;cursor:not-allowed}
 .icon-btn{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;font-size:20px;line-height:1}
 .chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700;background:var(--sea-soft);color:var(--sea)}
+.tiny{border:0;background:none;color:var(--muted);font-size:12px;padding:6px 4px;text-decoration:underline;opacity:.8;min-height:0}
+.schip{display:inline-flex;align-items:center;border:0;border-radius:999px;padding:6px 11px;font-size:12px;font-weight:700;min-height:32px;background:var(--sea-soft);color:var(--muted)}
+.schip.ok{background:var(--ok-soft);color:var(--ok)}
+.schip.warn{background:color-mix(in srgb,var(--gold) 22%,transparent);color:var(--ink)}
+.schip.bad{background:var(--bad-soft);color:var(--bad)}
+.timer{font-weight:700;font-variant-numeric:tabular-nums;font-size:14px;color:var(--muted);min-width:44px;text-align:right}
+.timer.low{color:var(--bad)}
+.inp+.inp{margin-top:8px}
+sup.bn{font-weight:700;font-size:11px;color:var(--sea);margin-left:1px}
 .chip.coral{background:color-mix(in srgb,var(--coral) 16%,transparent);color:var(--coral)}
 .chip.ok{background:var(--ok-soft);color:var(--ok)}
 .chip.bad{background:var(--bad-soft);color:var(--bad)}
@@ -3281,6 +3290,320 @@ WORDS.forEach(w=>{if(DF[w.w])w.df=DF[w.w];});
 WORDS.forEach(w=>{if(DF[w.w]&&!w.df)w.df=DF[w.w];});
 })();
 
+(function(){
+/* [term, ipa, pos, ko, example, definition, phenomenon] */
+const R=[
+["place of articulation","/pleɪs əv ɑːrˌtɪkjuˈleɪʃn/","n.","조음 위치","The {place of articulation} of /p/ is bilabial.","The point in the vocal tract where the {airstream} is {obstructed} to produce a consonant.","Comparing /p/, /t/ and /k/: all are voiceless stops, but the lips or the tongue block the air at different points in the mouth."],
+["manner of articulation","/ˈmænər əv ɑːrˌtɪkjuˈleɪʃn/","n.","조음 방법","/t/ and /s/ differ in {manner of articulation}: stop versus fricative.","The way the {airflow} is modified in the vocal tract to produce a {consonant}, such as a stop or a fricative.","/t/ and /s/ are made at the same position, but /t/ blocks the air completely while /s/ lets it slip through a narrow gap."],
+["voiceless","/ˈvɔɪsləs/","adj.","무성의","/s/ is a {voiceless} fricative.","Describing a sound produced without {vibration} of the {vocal} cords.","/p/, /t/, /k/ and /s/ are made with the vocal cords held apart, so a finger on the throat feels no buzz."],
+["coarticulation","/ˌkoʊɑːrtɪkjuˈleɪʃn/","n.","동시 조음","The lips round for /s/ in 'soon' because of {coarticulation}.","The overlap of {articulatory} gestures of neighboring sounds, so that one sound is influenced by the {next}.","In 'soon' the lips are already rounded during the /s/, in anticipation of the following vowel."],
+["nasalization","/ˌneɪzəlaɪˈzeɪʃn/","n.","비음화","The vowel in 'can't' undergoes {nasalization}.","A process in which a {vowel} acquires a nasal quality because it is next to a {nasal} consonant.","The vowel in 'ban' is pronounced partly through the nose because it comes right before /n/."],
+["dissimilation","/dɪˌsɪmɪˈleɪʃn/","n.","이화","'Marble' shows {dissimilation} from French 'marbre'.","A process in which two {similar} sounds in a word become {different}.","'Marble' comes from French 'marbre': one of the two /r/ sounds became /l/ so that the same sound was not repeated."],
+["haplology","/hæpˈlɑːlədʒi/","n.","중음 탈락","Saying 'probly' for 'probably' is an example of {haplology}.","The {omission} of a syllable when two identical or {similar} syllables occur in sequence.","'Probably' is often pronounced 'probly' and 'library' is often said 'libry': a repeated stretch of sound simply drops out."],
+["free variation","/friː ˌveriˈeɪʃn/","n.","자유 변이","Released and unreleased final /t/ occur in {free variation}.","The occurrence of two or more sounds in the same {environment} without a change in {meaning}.","A speaker may say the final /t/ of 'cat' released or unreleased on different occasions, with no predictable rule and no change in meaning."],
+["complementary distribution","/ˌkɑːmplɪˈmentri ˌdɪstrɪˈbjuːʃn/","n.","상보적 분포","Aspirated and unaspirated [p] are in {complementary distribution}.","A relationship in which two sounds never occur in the same {environment}, suggesting they are {allophones} of one phoneme.","[pʰ] appears only at the start of a stressed syllable and [p] only after /s/; the two sounds never occur in the same position."],
+["distinctive feature","/dɪˈstɪŋktɪv ˈfiːtʃər/","n.","변별적 자질","[voice] is a {distinctive feature} that separates /p/ from /b/.","A phonetic property, such as voicing or nasality, that {distinguishes} one phoneme from {another}.","/p/ and /b/ share place and manner of articulation; the only property separating them is whether the vocal cords vibrate."],
+["sonority","/səˈnɑːrəti/","n.","공명도","Vowels have higher {sonority} than stops.","The relative {loudness} or perceptibility of a sound, which determines its position in a {syllable}.","In 'plant' the perceptibility rises from /p/ through /l/ to the vowel, then falls through /n/ to /t/."],
+["syllabic consonant","/sɪˈlæbɪk ˈkɑːnsənənt/","n.","성절 자음","The /n/ in 'button' is a {syllabic consonant}.","A consonant that forms the {nucleus} of a {syllable} without a vowel.","In casual speech 'bottle' and 'button' still have two syllables even though the second one contains no vowel sound."],
+["intrusive r","/ɪnˈtruːsɪv ɑːr/","n.","끼어드는 r","'Law and order' is said with an {intrusive r}.","An /r/ inserted between two {vowels} in non-rhotic accents even where none is {spelled}.","Some British speakers say 'idea-r-of' and 'law-r-and order', adding an /r/ where the spelling has none."],
+["Great Vowel Shift","/ɡreɪt ˈvaʊəl ʃɪft/","n.","대모음추이","The {Great Vowel Shift} explains why 'bite' and 'beet' look so unlike their old forms.","A major change in the pronunciation of English {long} vowels between about 1400 and 1700, when they became {higher} or diphthongized.","Chaucer's 'name' /naːmə/ became modern /neɪm/ and 'mice' /miːs/ became /maɪs/ over a few centuries, which explains odd spelling-sound mismatches."],
+["TH-fronting","/ˌtiː eɪtʃ ˈfrʌntɪŋ/","n.","th 전방음화","'Fink' for 'think' is an example of {TH-fronting}.","A pronunciation feature in which {interdental} fricatives are replaced by {labiodental} ones.","Some London speakers say 'fink' for 'think' and 'bruvver' for 'brother'."],
+["yod-dropping","/jɒd ˈdrɑːpɪŋ/","n.","요드 탈락","American 'tune' is a case of {yod-dropping}.","The loss of the {glide} /j/ between a consonant and the {vowel} /uː/, as in American 'news' /nuːz/.","Americans say 'tune' /tuːn/ and 'duty' /duːti/ while many British speakers say /tjuːn/ and /djuːti/."],
+
+["clitic","/ˈklɪtɪk/","n.","접어","The 'll in 'she'll' is a {clitic}.","A reduced form that functions as a word syntactically but must {attach} to a {host} word phonologically.","The 's in 'John's here' and the 'll in 'she'll go' cannot stand alone in speech; they lean on the word before."],
+["infix","/ˈɪnfɪks/","n.","삽입사","In 'abso-bloody-lutely', the word 'bloody' works like an {infix}.","An affix inserted inside the {root} of a word rather than at its {edge}.","'Fan-freaking-tastic' and 'abso-bloody-lutely' insert an expletive into the middle of a single word."],
+["circumfix","/ˈsɜːrkəmfɪks/","n.","환접사","German 'ge-...-t' is a {circumfix}.","A {discontinuous} affix that surrounds a {base}, appearing on both sides of it.","In German 'spielen' becomes 'gespielt' by adding material before and after the verb stem together."],
+["endocentric compound","/ˌendoʊˈsentrɪk ˈkɑːmpaʊnd/","n.","내심 복합어","'Blackboard' is an {endocentric compound}.","A compound that is a {hyponym} of one of its parts, which serves as its {head}.","A 'blackboard' is a kind of board and a 'toothbrush' is a kind of brush: one part names the category."],
+["exocentric compound","/ˌeksoʊˈsentrɪk ˈkɑːmpaʊnd/","n.","외심 복합어","'Redhead' is an {exocentric compound}.","A compound whose meaning is not a {kind} of either part, because it has no internal {head}.","A 'redhead' is a person, not a kind of head, and a 'pickpocket' is a thief, not a kind of pocket."],
+["cranberry morpheme","/ˈkrænberi ˈmɔːrfiːm/","n.","크랜베리 형태소","'Cran-' in 'cranberry' is a {cranberry morpheme}.","A bound {morpheme} that occurs in only one {word}, so its separate meaning cannot be identified.","In 'cranberry', 'huckleberry' and 'boysenberry', the first part has no independent meaning anywhere else in the language."],
+["eponym","/ˈepənɪm/","n.","인명 유래어","'Sandwich' is an {eponym}.","A word derived from the {name} of a {person} or place, such as 'sandwich' or 'boycott'.","'Sandwich' comes from the Earl of Sandwich and 'boycott' from Captain Boycott, a land agent in Ireland."],
+["calque","/kælk/","n.","번역 차용","German 'Wolkenkratzer' is a {calque} of 'skyscraper'.","A word or phrase borrowed by {literal} translation of its parts into the {borrowing} language.","French 'gratte-ciel', German 'Wolkenkratzer' and Spanish 'rascacielos' were each built by translating 'sky-scraper' piece by piece."],
+["loanword","/ˈloʊnwɜːrd/","n.","차용어","'Kindergarten' is a {loanword} from German.","A word adopted from {another} language with little change in form, such as 'karaoke' from {Japanese}.","English took 'karaoke' and 'tsunami' from Japanese and 'kindergarten' from German essentially unchanged."],
+["ablaut","/ˈæblaʊt/","n.","모음 교체","'Sing, sang, sung' shows {ablaut}.","A change in the internal {vowel} of a word that marks a {grammatical} difference.","The past of 'sing' is 'sang' and the past of 'drive' is 'drove': the tense changes only by replacing the vowel inside the word."],
+["lexical gap","/ˈleksɪkl ɡæp/","n.","어휘적 공백","English has a {lexical gap} for 'the day after tomorrow'.","A concept for which a language has no single {word}, though it can be {expressed} in a phrase.","English has no single word for 'the day after tomorrow', whereas German has 'übermorgen'."],
+["folk etymology","/foʊk ˌetɪˈmɑːlədʒi/","n.","민간어원","'Sparrow grass' for 'asparagus' is a {folk etymology}.","A change in a word's form caused by a mistaken {popular} belief about its {origin}.","Speakers reshaped 'asparagus' as 'sparrow grass', and Spanish 'cucaracha' became 'cockroach' as if it were built from 'cock' and 'roach'."],
+
+["specifier","/ˈspesɪfaɪər/","n.","지정어","'The' is the {specifier} of the noun phrase 'the book'.","In X-bar theory, the element that combines with an intermediate projection to form a full {phrase}, often a {determiner} or a subject.","In a tree diagram of 'the book', the word 'the' occupies the position that completes the noun phrase, sister to the intermediate N' node."],
+["wh-movement","/ˈdʌbljuː eɪtʃ ˈmuːvmənt/","n.","의문사 이동","'What did you see?' involves {wh-movement}.","A syntactic operation that moves a {question} word to the front of a clause, leaving a {gap}.","'You saw what' becomes 'What did you see __?' with the question word shifted to the start of the sentence."],
+["raising","/ˈreɪzɪŋ/","n.","상승","'John seems to be happy' involves {raising}.","A construction in which the {subject} of an embedded clause moves to the subject position of the {main} clause.","In 'Mary seems to like jazz', Mary is the one who likes jazz but is the grammatical subject of 'seems'."],
+["control","/kənˈtroʊl/","n.","통제","In 'John tried to leave', {control} gives 'leave' its subject.","A relation in which the unexpressed {subject} of an infinitive is interpreted as identical to an {argument} of the main verb.","In 'Tom tried to leave', the person who is to leave is understood to be Tom even though no subject is pronounced before 'leave'."],
+["garden-path sentence","/ˈɡɑːrdn pæθ ˈsentəns/","n.","정원길 문장","'The old man the boats' is a {garden-path sentence}.","A grammatical sentence that leads the reader to an initial {misparsing} and forces {reanalysis}.","Readers stumble on 'The old man the boats' because they first read 'man' as a noun and must then reinterpret it as a verb."],
+["center embedding","/ˈsentər ɪmˈbedɪŋ/","n.","중심 내포","'The rat the cat chased died' shows {center embedding}.","A structure in which a clause is placed in the {middle} of another clause, making it {hard} to process.","'The rat the cat the dog chased bit ran away' is grammatical, but the clauses nested in the middle make it nearly unreadable."],
+["unaccusative","/ˌʌnəˈkjuːzətɪv/","adj.","비대격의","'Melt' and 'arrive' are {unaccusative} verbs.","Describing an intransitive verb whose single {argument} is a patient-like {subject}.","In 'The ice melted' and 'The train arrived', the subject does not deliberately perform the action but undergoes it."],
+["unergative","/ʌnˈɜːrɡətɪv/","adj.","비능격의","'Run' and 'laugh' are {unergative} verbs.","Describing an intransitive verb whose single {argument} is an {agent} that performs the action.","In 'The child laughed' and 'The dog ran', the subject deliberately carries out the action."],
+["pro-drop","/proʊ drɑːp/","n.","주어 생략","Italian is a {pro-drop} language.","A property of languages that allow the {subject} pronoun to be omitted because verb {agreement} or context recovers it.","Italian 'Parlo inglese' means 'I speak English' with no subject word, whereas English cannot leave out the subject in this way."],
+["dangling modifier","/ˈdæŋɡlɪŋ ˈmɑːdɪfaɪər/","n.","현수 수식어","'Walking to school, the rain started' contains a {dangling modifier}.","A modifier that has no clear {word} to modify in the sentence, creating an {illogical} meaning.","'Walking to school, the rain started' wrongly suggests that the rain was walking."],
+["reflexive pronoun","/rɪˈfleksɪv ˈproʊnaʊn/","n.","재귀대명사","In 'She hurt herself', 'herself' is a {reflexive pronoun}.","A pronoun ending in -self that refers back to the {subject} of the same {clause}.","In 'Mary saw herself in the mirror', the pronoun must refer to Mary and not to anyone else."],
+["parallel structure","/ˈpærəlel ˈstrʌktʃər/","n.","병렬 구조","'She likes swimming, hiking and cycling' has {parallel structure}.","The use of the same grammatical form for items in a series or {coordinated} elements to create {balance}.","'He likes swimming, to hike and cycling' sounds wrong, whereas 'swimming, hiking and cycling' sounds balanced."],
+["negative polarity item","/ˈneɡətɪv poʊˈlærəti ˈaɪtəm/","n.","부정극어","'Any' is a {negative polarity item}.","A word, such as 'any' or 'ever', that is {licensed} only in negative or {question} contexts.","'I didn't see anyone' is fine but 'I saw anyone' is odd; the word can appear only in negative or question contexts."],
+["selectional restriction","/sɪˈlekʃənl rɪˈstrɪkʃn/","n.","선택 제약","'The rock ate lunch' violates a {selectional restriction}.","A semantic constraint on the {type} of noun a verb can take as its {argument}.","'The rock ate lunch' is odd because 'eat' normally requires an animate subject."],
+
+["epistemic modality","/ˌepɪˈstiːmɪk moʊˈdæləti/","n.","인식적 양태","'It must be raining' expresses {epistemic modality}.","Modality that expresses the speaker's degree of {certainty} or {knowledge} about a proposition.","'She must be at home' and 'It might rain' show how sure the speaker is, not whether anyone is obliged to do anything."],
+["deontic modality","/diˈɑːntɪk moʊˈdæləti/","n.","의무적 양태","'You must leave' expresses {deontic modality}.","Modality that expresses {obligation}, permission or {prohibition}.","'You must wear a seatbelt' and 'You may leave' concern what is required or allowed, not what is likely."],
+["scalar implicature","/ˈskeɪlər ˈɪmplɪkeɪtʃər/","n.","척도 함축","'Some' implying 'not all' is a {scalar implicature}.","An inference that a speaker who uses a weaker term on a {scale} means that the stronger term does not {apply}.","If a teacher says 'Some students passed', listeners usually conclude that not all of them did."],
+["conversational maxim","/ˌkɑːnvərˈseɪʃənl ˈmæksɪm/","n.","대화 격률","Grice proposed four {conversational maxims}.","One of Grice's {guidelines}, quantity, quality, relation and manner, that speakers normally {follow} to cooperate.","Be informative but no more than needed, be truthful, be relevant and be clear: four expectations behind ordinary talk."],
+["phatic communion","/ˈfætɪk kəˈmjuːnjən/","n.","친교적 언어 사용","'Nice weather, isn't it?' is {phatic communion}.","Language used mainly to establish or maintain {social} contact rather than to exchange {information}.","'How are you?' and 'Nice weather today' are exchanged with neighbors without anyone wanting real information."],
+["pragmatic transfer","/præɡˈmætɪk ˈtrænsfɜːr/","n.","화용적 전이","Refusing too bluntly because of L1 norms is {pragmatic transfer}.","The use of {native}-language rules of {appropriateness} when speaking a second language.","A learner translates a first-language way of refusing an invitation directly into English and sounds rude without meaning to."],
+["cataphora","/kəˈtæfərə/","n.","후방 조응","In 'Before she spoke, Anna cleared her throat', 'she' shows {cataphora}.","The use of a pronoun that refers {forward} to an expression that appears {later} in the text.","In 'Before she spoke, Anna cleared her throat', the first pronoun points to a name mentioned afterward."],
+["exophora","/ˌeksoʊˈfɔːrə/","n.","외부 조응","'Look at that!' is a case of {exophora}.","Reference to something in the {situation} outside the text rather than to an expression in the {discourse}.","Someone points and says 'Look at that!' with no earlier mention of what 'that' is."],
+["substitution","/ˌsʌbstɪˈtuːʃn/","n.","대용","'I need a new one' uses {substitution}.","A cohesive device in which a word such as 'one' or 'do' replaces an earlier {item} to avoid {repetition}.","'I lost my pen; I need a new one' avoids repeating 'pen' by using a replacement word."],
+["theme-rheme","/θiːm riːm/","n.","주제부-평언부","The {theme-rheme} division organizes a clause.","The division of a clause into the starting point, which is the {theme}, and the new information added about it, which is the {rheme}.","In 'Yesterday the manager resigned', the opening element sets the starting point and the rest of the clause adds the news."],
+["vagueness","/ˈveɪɡnəs/","n.","모호성","The word 'tall' shows {vagueness}.","The lack of a sharp {boundary} in the meaning of a word, such as 'tall' or '{young}'.","No one can say exactly how many centimeters make a person 'tall' or how many years make someone 'old'."],
+["contradiction","/ˌkɑːntrəˈdɪkʃn/","n.","모순","'It is raining and it is not raining' is a {contradiction}.","A relation in which two sentences cannot both be {true} at the same {time}.","'The door is open' and 'The door is closed' cannot both describe the same door at the same moment."],
+
+["overt prestige","/ˈoʊvɜːrt ˈprestiːʒ/","n.","공공연한 위신","Preferring the news-reader accent reflects {overt prestige}.","Social value attached to a standard or high-status {variety} that speakers openly {admire}.","Speakers say they prefer the 'correct' accent of newsreaders and professionals."],
+["covert prestige","/ˈkoʊvɜːrt ˈprestiːʒ/","n.","은밀한 위신","Local vernacular forms enjoy {covert prestige} among many men.","Positive {value} attached to a non-standard variety, shown in actual {usage} rather than in stated attitudes.","Men in a survey claim to speak standard English but are recorded using local forms that signal toughness and group loyalty."],
+["speech accommodation","/spiːtʃ əˌkɑːməˈdeɪʃn/","n.","언어 적응","Slowing down for a foreigner is {speech accommodation}.","Adjusting one's way of {speaking} toward or away from that of the {interlocutor}.","A speaker slows down and uses simpler words with a foreigner, or exaggerates a local accent to stress group identity."],
+["matched-guise test","/mætʃt ɡaɪz test/","n.","짝지은 말투 검사","A {matched-guise test} reveals hidden language attitudes.","A research technique in which listeners {evaluate} recordings of the same bilingual speaker using different languages or {varieties}.","Listeners hear what they think are different speakers, actually one person in two accents, and rate the standard accent as more intelligent."],
+["isogloss","/ˈaɪsəɡlɑːs/","n.","등어선","The {isogloss} separates 'pop' areas from 'soda' areas.","A line on a map marking the {boundary} of an area where a particular linguistic feature is {used}.","On a dialect map, one line separates the region that says 'pop' from the region that says 'soda'."],
+["dialect continuum","/ˈdaɪəlekt kənˈtɪnjuːəm/","n.","방언 연속체","Dutch and German form a {dialect continuum}.","A chain of {varieties} in which neighboring ones are mutually intelligible but distant ones are {not}.","Villages along the Dutch-German border understand their neighbors, yet speakers from the two ends of the chain cannot communicate."],
+["language death","/ˈlæŋɡwɪdʒ deθ/","n.","언어 소멸","The loss of Manx is an example of {language death}.","The {disappearance} of a language when its last {speakers} die or stop using it.","When the last fluent first-language speaker of Manx died in 1974, the language no longer had native users."],
+["heritage language","/ˈherɪtɪdʒ ˈlæŋɡwɪdʒ/","n.","계승어","Korean is her {heritage language}.","A {minority} language spoken at home by an immigrant community, often with {incomplete} acquisition in children.","A child born in the U.S. speaks Korean at home with her grandparents but uses English at school and with friends."],
+["code-mixing","/koʊd ˈmɪksɪŋ/","n.","코드 혼합","Using Spanish words inside an English clause is {code-mixing}.","The use of elements of two languages {within} a single sentence or clause, usually without a change of {topic}.","'I'll see you after the 회의' blends two languages inside a single sentence."],
+["language planning","/ˈlæŋɡwɪdʒ ˈplænɪŋ/","n.","언어 계획","Standardizing spelling is part of {language planning}.","Deliberate government or institutional {efforts} to influence the use, status or {structure} of a language.","A country decides to standardize spelling, create new technical vocabulary and make one language compulsory in schools."],
+["vernacular","/vərˈnækjələr/","n.","토착어, 일상어","She uses the {vernacular} with friends.","The everyday {spoken} language of ordinary people in a community, as opposed to a formal or {standard} one.","Teachers use formal English in lessons but chat in the local street speech with their friends."],
+
+["aphasia","/əˈfeɪʒə/","n.","실어증","A stroke can cause {aphasia}.","A language {disorder} caused by damage to the {brain}, affecting speaking or understanding.","After a stroke, a patient can no longer find words or follow speech, though her intelligence is otherwise intact."],
+["Broca's aphasia","/ˈbroʊkəz əˈfeɪʒə/","n.","브로카 실어증","Halting speech is typical of {Broca's aphasia}.","A language disorder marked by halting, {agrammatic} speech with relatively intact {comprehension}.","A patient says 'Walk dog park' slowly and with effort, but understands what others say to him."],
+["Wernicke's aphasia","/ˈvɜːrnɪkiz əˈfeɪʒə/","n.","베르니케 실어증","Fluent nonsense is typical of {Wernicke's aphasia}.","A language disorder marked by fluent but {meaningless} speech and poor {comprehension}.","A patient speaks smoothly and quickly, but the words make little sense and she does not understand what is said to her."],
+["lateralization","/ˌlætərəlaɪˈzeɪʃn/","n.","편측화","Language shows {lateralization} to the left hemisphere.","The {specialization} of one hemisphere of the brain, usually the {left}, for language functions.","In most right-handed people, damage to the left side of the brain, not the right, produces serious speech problems."],
+["babbling","/ˈbæblɪŋ/","n.","옹알이","Infants start {babbling} at about six months.","The {repetitive} consonant-vowel {sequences} produced by infants from about six months, such as 'bababa'.","A seven-month-old repeatedly produces strings like 'ma-ma-ma' and 'da-da-da' without any meaning."],
+["holophrastic stage","/ˌhɑːləˈfræstɪk steɪdʒ/","n.","일어문 단계","'Milk!' is typical of the {holophrastic stage}.","The stage at which a child uses a single {word} to express a whole {sentence} meaning.","A toddler says 'Milk!' to mean 'I want some milk', using one word to convey a full message."],
+["telegraphic speech","/ˌtelɪˈɡræfɪk spiːtʃ/","n.","전보식 발화","'Mommy go work' is {telegraphic speech}.","Child speech that omits {function} words and inflections, keeping only {content} words.","'Mommy go work' and 'Daddy car' leave out small grammatical words, like a telegram."],
+["overextension","/ˌoʊvərɪkˈstenʃn/","n.","과잉 확장","Calling every animal 'doggie' is {overextension}.","A child's use of a word for a {wider} {range} of objects than adults do, such as calling every animal a 'dog'.","A two-year-old calls cats, cows and horses 'doggie' and calls the moon a 'ball'."],
+["underextension","/ˌʌndərɪkˈstenʃn/","n.","과소 확장","Using 'cup' only for one's own cup is {underextension}.","A child's use of a word for a narrower set of {referents} than adults do, such as using 'cup' only for one {particular} cup.","A child uses 'bird' only for the sparrow at the window and does not apply the word to ducks or eagles."],
+["child-directed speech","/tʃaɪld dəˈrektɪd spiːtʃ/","n.","아동 지향어","Sing-song talk to babies is {child-directed speech}.","The simplified, high-pitched {speech} that caregivers use with young children, with short sentences and {repetition}.","A mother speaks in a sing-song voice, slowly and with exaggerated intonation, repeating short phrases to her baby."],
+["spoonerism","/ˈspuːnərɪzəm/","n.","두음 전환","'Our queer old dean' for 'our dear old queen' is a {spoonerism}.","A {slip} of the tongue in which the initial sounds of two words are {swapped}.","Saying 'You have hissed my mystery lecture' instead of 'You have missed my history lecture'."],
+["tip-of-the-tongue phenomenon","/tɪp əv ðə tʌŋ fɪˈnɑːmɪnɑːn/","n.","설단 현상","Forgetting a familiar name is a {tip-of-the-tongue phenomenon}.","The experience of knowing a word but being temporarily {unable} to {retrieve} it.","You know the word starts with 'm' and has three syllables, yet you cannot say it right now."],
+["priming","/ˈpraɪmɪŋ/","n.","점화","'Doctor' speeds recognition of 'nurse' through {priming}.","The effect in which exposure to one {stimulus} speeds up the recognition of a related {item}.","People recognize the word 'nurse' faster if they have just seen the word 'doctor'."],
+["lexical access","/ˈleksɪkl ˈækses/","n.","어휘 접근","{Lexical access} takes only milliseconds.","The mental process of {retrieving} a word and its {properties} from the lexicon.","In milliseconds, a listener hears the sounds /kæt/ and activates the stored word along with its meaning."],
+
+["etymology","/ˌetɪˈmɑːlədʒi/","n.","어원(학)","{Etymology} explains why 'nice' once meant 'foolish'.","The study of the {origin} of words and how their forms and meanings have {changed}.","Tracing 'nice' back to a Latin word meaning 'ignorant' and seeing how it changed over centuries."],
+["language family","/ˈlæŋɡwɪdʒ ˈfæməli/","n.","어족","English belongs to the Indo-European {language family}.","A group of languages that {descend} from a common {ancestor}.","English, German and Dutch resemble each other because they all come from one earlier language."],
+["Grimm's law","/ɡrɪmz lɔː/","n.","그림의 법칙","{Grimm's law} links Latin 'pater' with English 'father'.","A systematic {sound} change in Proto-Germanic in which Indo-European stops became {fricatives}.","Latin 'pater' and 'piscis' correspond to English 'father' and 'fish', where /p/ regularly became /f/."],
+["sound change","/saʊnd tʃeɪndʒ/","n.","음변화","The silent k in 'knight' results from {sound change}.","A regular {shift} in the pronunciation of a sound across a language over {time}.","Across generations the /k/ in 'knight' stopped being pronounced in every word beginning with kn-."],
+["grammatical gender","/ɡrəˈmætɪkl ˈdʒendər/","n.","문법적 성","French has {grammatical gender}.","A system that classifies {nouns} into categories such as masculine and feminine, shown through {agreement}.","In French a table is 'la table' and a book is 'le livre', even though neither object has a sex."],
+["language contact","/ˈlæŋɡwɪdʒ ˈkɑːntækt/","n.","언어 접촉","{Language contact} produces loanwords.","The situation in which speakers of different languages {interact} and influence one {another}.","Traders from several countries meet regularly at a port and borrow words from each other's speech."],
+["diachronic","/ˌdaɪəˈkrɑːnɪk/","adj.","통시적","A {diachronic} study compares Old and Modern English.","Describing the study of a language's {development} over {time}.","A study compares Old English, Middle English and modern English to see how the verb system developed."],
+["synchronic","/sɪŋˈkrɑːnɪk/","adj.","공시적","A {synchronic} description covers present-day English only.","Describing the study of a language at a particular {moment} in time without {reference} to its history.","A description of the grammar of present-day American English without any discussion of how it developed."],
+["arbitrariness","/ˌɑːrbɪˈtrerinəs/","n.","자의성","The {arbitrariness} of the sign means 'dog' could have been any sound.","The lack of a natural {connection} between a word's form and its {meaning}.","There is nothing dog-like about the sounds in 'dog', and other languages use 'chien' or 'inu' for the same animal."],
+["duality of patterning","/duːˈæləti əv ˈpætərnɪŋ/","n.","이중 분절","{Duality of patterning} lets a few sounds make thousands of words.","The property of language in which meaningless {sounds} combine into meaningful {units}.","The meaningless sounds /k/, /æ/ and /t/ combine to form a word with meaning, and words combine to form sentences."],
+["displacement","/dɪsˈpleɪsmənt/","n.","전위성","{Displacement} lets us talk about yesterday.","The ability of language to refer to things not {present} in space or {time}.","People can talk about yesterday's lunch, next year's holiday or a dragon that does not exist."]
+];
+WORDS.push(...R.map(r=>({w:r[0],ipa:r[1],pos:r[2],ko:r[3],ex:r[4],df:r[5],ph:r[6],cat:'ling'})));
+})();
+
+(function(){
+const PH={
+"phoneme":"'Pin' and 'bin' are different words, so the sounds /p/ and /b/ cannot be treated as the same sound in English.",
+"allophone":"[pʰ] in 'pin' and [p] in 'spin' sound different, yet English speakers hear them as the same sound.",
+"morpheme":"'Unhappiness' can be broken into three meaningful parts: un-, happy and -ness.",
+"fricative":"In /s/ and /f/ the air squeezes through a narrow gap and produces a hissing noise.",
+"affricate":"The first and last sounds of 'church' begin with a complete closure and end with a release of friction.",
+"plosive":"Air is completely blocked behind the lips and then released in a small burst, as at the start of 'pie'.",
+"assimilation":"'Handbag' is often pronounced like 'hambag', with /n/ turning into /m/ before /b/.",
+"elision":"In rapid speech 'next day' sounds like 'nex day' and 'friendship' like 'frenship'.",
+"epenthesis":"Some speakers say 'athalete' for 'athlete' and 'fillum' for 'film' by adding an extra vowel.",
+"intonation":"'You're coming?' said with rising pitch turns a statement into a question.",
+"suprasegmental":"Stress, pitch and length affect whole syllables or phrases rather than single sounds.",
+"diphthong":"The vowels in 'boy' and 'now' begin at one quality and glide smoothly to another within one syllable.",
+"inflection":"'Walk' changes to 'walks', 'walked' and 'walking' without becoming a new word.",
+"derivation":"Adding -er to 'teach' produces 'teacher', a new word that belongs to a different word class.",
+"compounding":"'Bookshop', 'sunflower' and 'blackboard' are each made by joining two words into one.",
+"affix":"Un-, -ness and -ing, taken together as one general class of forms, attach to other forms and can never stand alone as words (answer with the cover term, not a single subtype).",
+"allomorph":"The plural ending is pronounced /s/ in 'cats', /z/ in 'dogs' and /ɪz/ in 'buses'.",
+"anaphora":"In 'Tom lost his keys and he panicked', the word 'he' points back to Tom.",
+"deixis":"The word 'here' refers to different places depending on who says it and where.",
+"presupposition":"'Have you stopped smoking?' assumes that the listener used to smoke, whether the answer is yes or no.",
+"implicature":"A: 'Do you have the report?' B: 'It's on my desk at home.' B suggests that he does not have it with him.",
+"speech act":"Saying 'I promise to call you' is not just a statement; the speaker is doing something by speaking.",
+"register":"A speaker uses 'Would you kindly assist me' in a formal meeting but 'Gimme a hand' with friends.",
+"dialect":"Speakers from Boston, Glasgow and Sydney use different words, accents and grammar, yet understand one another.",
+"code-switching":"A bilingual student starts a sentence in English and finishes it in Spanish when talking to a friend.",
+"homonym":"'Bank' (of a river) and 'bank' (for money) are spelled and pronounced alike but are unrelated in meaning.",
+"polysemy":"The word 'head' can refer to a body part, the leader of a company, or the top of a page, and the senses are related.",
+"hyponym":"'Rose' is a kind of flower and 'sparrow' is a kind of bird.",
+"collocation":"We say 'make a decision' and 'heavy rain', but not 'do a decision' or 'strong rain'.",
+"idiom":"'Kick the bucket' means 'die', which cannot be worked out from the words kick and bucket.",
+"grammaticalization":"'Going to' once described moving toward a place but now simply marks the future, as in 'It's going to rain'.",
+"phonotactics":"English allows /str/ at the start of 'street' but not /tl/ or /kn/ at the start of a word.",
+"aspiration":"Hold a tissue before your lips: it flutters when you say 'pin' but hardly moves when you say 'spin'.",
+"voicing":"The only difference between /s/ and /z/ is whether the vocal cords buzz.",
+"minimal pair":"'Bat' and 'pat' differ in only the first sound, yet they mean different things.",
+"transitive":"'She kicked' feels incomplete, while 'She kicked the ball' supplies something to receive the action.",
+"ellipsis":"'Tom likes jazz and Mary rock' leaves out a word that listeners can easily recover.",
+"cohesion":"'However', 'this' and 'the same' tie sentences together so that a text reads as connected.",
+"discourse":"Analyzing a whole conversation or newspaper article rather than a single sentence.",
+"interlanguage":"A Korean learner of English says 'I go to school yesterday', following rules that belong to neither Korean nor English.",
+"fossilization":"After twenty years in the U.S., a speaker still says 'sink' for 'think'; the error no longer changes despite instruction.",
+"comprehensible input":"A teacher uses gestures, pictures and slightly simplified language so learners can follow a story just above their level.",
+"affective filter":"A nervous student understands the lesson but cannot take in or produce language because of anxiety.",
+"scaffolding":"A teacher gives sentence starters and gradually removes them as the learner becomes able to write alone.",
+"zone of proximal development":"A child cannot solve a puzzle alone but can with a hint from the teacher.",
+"negotiation of meaning":"A learner asks 'Sorry, what do you mean?' and the partner rephrases until both understand.",
+"recast":"Learner: 'He go to school.' Teacher: 'Yes, he goes to school.'",
+"elicitation":"Teacher: 'He go to...?' pausing so that the learner supplies 'goes' by himself.",
+"formative assessment":"A teacher checks understanding with quick quizzes during a unit and adjusts the next lessons.",
+"summative":"A final exam at the end of the semester is used to give a grade.",
+"rubric":"A scoring sheet lists criteria such as content, organization and grammar, with descriptions for each level.",
+"washback":"Students spend class time practicing multiple-choice items because the national exam uses them.",
+"validity":"A speaking test that only asks students to fill in blanks does not really measure speaking.",
+"reliability":"The same essay gets 90 from one rater and 60 from another, or different scores on different days.",
+"cognate":"English 'night', German 'Nacht' and Dutch 'nacht' share a common ancestor.",
+"transfer":"A Korean speaker leaves out articles in English because Korean has none.",
+"noticing":"A learner suddenly realizes that native speakers say 'I've been to Paris' rather than 'I went to Paris' in such contexts.",
+"deductive":"A teacher first states 'Add -s to third-person singular verbs' and then has students practice it.",
+"inductive":"Students read many sentences with 'since' and 'for' and work out the rule on their own.",
+"chunk":"'I don't know' and 'by the way' are stored and used as ready-made units rather than built word by word.",
+"fluency":"A speaker talks smoothly with few pauses, even if some small errors occur.",
+"accuracy":"A learner writes slowly, but every sentence is grammatically correct.",
+"cooperative learning":"Students work in groups of four, each with a role, and succeed only if everyone in the group does.",
+"immersion":"English-speaking children in Canada study math and science entirely in French.",
+"mnemonic":"'Every Good Boy Deserves Fudge' helps students remember the notes on the lines of the staff.",
+"extrinsic":"A student studies English only to win a prize or avoid punishment.",
+"intrinsic":"A student reads English novels simply because she enjoys them.",
+"authentic":"A class uses a real train timetable and a newspaper article instead of a textbook dialogue.",
+"task-based":"Students plan a trip itinerary in groups; the language they need comes from completing the task.",
+"communicative competence":"A learner knows when to say 'Could you pass the salt?' instead of 'Give me salt', not just how to form the sentence.",
+"schwa":"The first sound in 'about' and the last sound in 'sofa' is a weak mid-central vowel.",
+"flapping":"In American English 'butter' sounds like 'budder' because /t/ becomes a quick tap between vowels.",
+"palatalization":"'Did you' is pronounced 'didja' as /d/ and /j/ merge into /dʒ/.",
+"glottal stop":"Many Cockney speakers say 'bo'le' for 'bottle', with a catch in the throat instead of /t/.",
+"linking":"'Pick it up' sounds like 'pi-ki-tup' as final consonants join the vowels that follow.",
+"stress-timed":"English speakers keep stressed syllables roughly evenly spaced and squeeze the unstressed ones in between.",
+"syllable-timed":"In Spanish and French the syllables are all roughly the same length.",
+"metathesis":"'Ask' pronounced 'aks' and 'cavalry' pronounced 'calvary' show two sounds swapping places.",
+"rhotic":"In General American 'car' keeps its /r/, but in many British accents the /r/ is silent.",
+"diglossia":"In Switzerland people write and teach in standard German but speak Swiss German at home.",
+"pidgin":"Traders with no common language develop a simple mixed language with a small vocabulary and no native speakers.",
+"creole":"Children grow up speaking a former trade pidgin as their first language, and it grows into a full language.",
+"lingua franca":"Business people from Brazil, Japan and Germany meet and use English with each other.",
+"euphemism":"People say 'passed away' instead of 'died' and 'let go' instead of 'fired'.",
+"metonymy":"'The White House announced new rules' uses a building to stand for the government.",
+"connotation":"'Slim' sounds positive and 'skinny' sounds negative, though both describe a thin person.",
+"synonym":"'Big' and 'large' mean nearly the same thing.",
+"homophone":"'Their' and 'there' sound alike but are spelled differently and mean different things.",
+"homograph":"'Lead' (to guide) and 'lead' (a metal) are spelled the same but pronounced differently.",
+"antonym":"'Hot' and 'cold', or 'rich' and 'poor', have opposite meanings.",
+"hypernym":"'Furniture' covers table, chair and bed.",
+"meronym":"A wheel is part of a car, and a finger is part of a hand.",
+"gradable":"'Very tall' and 'taller' are fine, but 'very dead' sounds odd.",
+"complementary pair":"A door is either open or closed: if one is true, the other must be false.",
+"converse":"'Buy' and 'sell', or 'parent' and 'child', describe the same relationship from opposite viewpoints.",
+"broadening":"'Holiday' once meant only a holy day but now refers to any day off or vacation.",
+"narrowing":"'Meat' once meant any food but now refers only to animal flesh.",
+"pejoration":"'Silly' once meant 'blessed' but now means foolish.",
+"amelioration":"'Nice' once meant 'foolish' but now means pleasant.",
+"tautology":"'Boys will be boys' is always true but tells us nothing new.",
+"face":"A speaker avoids contradicting the boss in public so as not to embarrass him.",
+"positive face":"A person likes to be praised, included and treated as a friend.",
+"negative face":"A person wants not to be told what to do and wants room to act independently.",
+"face-threatening act":"Saying 'Your presentation was a mess' in front of the whole class.",
+"locutionary act":"Producing the words 'It's cold in here' with their literal meaning.",
+"illocutionary act":"'It's cold in here' said as a request that someone close the window.",
+"perlocutionary act":"Because of 'It's cold in here', the listener gets up and closes the window.",
+"performative":"'I now pronounce you husband and wife' changes the situation simply by being said.",
+"felicity condition":"'I bet you ten dollars' fails as a bet if the speaker has no money or the hearer does not accept.",
+"indirect speech act":"'Can you pass the salt?' is meant as a request, not as a question about ability.",
+"turn-taking":"People rarely speak at the same time and pause briefly before another speaker starts.",
+"adjacency pair":"A greeting is answered with a greeting, and a question with an answer.",
+"back-channel":"Listeners say 'uh-huh' and 'right' while someone else is speaking.",
+"repair":"'I mean...' or 'sorry, I meant Tuesday' fixes a slip in the middle of a conversation.",
+"hedge":"'Sort of', 'I guess' and 'maybe' soften what is said.",
+"discourse marker":"'Well', 'anyway' and 'you know' signal how the speaker organizes the talk.",
+"coherence":"Each idea in a text follows logically from the previous one, even without connecting words.",
+"idiolect":"No two people use language in exactly the same way, even within one family.",
+"sociolect":"Working-class and middle-class speakers in the same city differ in pronunciation and vocabulary.",
+"linguistic relativity":"Speakers of languages with more color terms may distinguish certain shades faster than speakers of languages with fewer.",
+"language shift":"Immigrants' grandchildren stop using the heritage language and speak only English.",
+"overgeneralization":"A child says 'goed' and 'mouses', applying regular rules to irregular words.",
+"avoidance":"A learner never uses relative clauses because they feel too difficult.",
+"U-shaped learning":"A child first says 'went', then 'goed', then 'went' again.",
+"monitor hypothesis":"A learner stops to check grammar rules before speaking and edits his own output.",
+"input hypothesis":"Learners progress when they understand messages containing structures slightly beyond their current level.",
+"output hypothesis":"Having to speak or write a message makes learners notice gaps in their grammar.",
+"interaction hypothesis":"Learners improve through conversations in which they clarify and check meaning.",
+"natural order":"Learners acquire plural -s before third-person -s, regardless of the order in which they are taught.",
+"behaviorism":"Learners imitate models and are rewarded until correct patterns become habits.",
+"audiolingual":"Students repeat model sentences in chorus and complete substitution drills.",
+"grammar-translation":"Learners translate Latin passages and memorize grammar rules in their native language.",
+"direct method":"The teacher uses only the target language, with pictures and actions, and never translates.",
+"total physical response":"The teacher says 'Stand up' and students respond with actions, not words.",
+"suggestopedia":"Soft baroque music plays and students relax in comfortable chairs during the lesson.",
+"content-based":"Students learn English by studying history in English.",
+"genre-based":"Students analyze the structure of a complaint letter and then write one of their own.",
+"process writing":"Students plan, draft, revise with peer comments and then edit.",
+"skimming":"Running your eyes over an article quickly to get the main idea.",
+"scanning":"Looking through a train timetable for one specific departure time.",
+"top-down":"A reader uses knowledge of the topic and expectations to predict what a text says.",
+"bottom-up":"A reader recognizes letters, then words, and builds up the meaning step by step.",
+"schema":"A reader understands a restaurant story better because he knows the usual sequence of ordering, eating and paying.",
+"extensive reading":"Students read many simple books of their own choice for pleasure.",
+"intensive reading":"Students study a short passage line by line to examine its grammar and vocabulary.",
+"cloze test":"Every seventh word is removed from a passage and students fill in the gaps.",
+"portfolio":"Students keep drafts and final texts throughout the year to show their progress.",
+"criterion-referenced":"A driving test passes everyone who meets the set standard, however many that is.",
+"norm-referenced":"Students are ranked and graded relative to each other's scores.",
+"diagnostic":"A test at the start of a course shows which grammar points each student has not mastered.",
+"placement test":"New students take an exam that decides whether they join the beginner or the intermediate class.",
+"integrative":"A student studies Japanese because she loves the culture and wants to live among Japanese people.",
+"instrumental":"A student studies English only to get a better job.",
+"self-efficacy":"A learner who believes 'I can do this' keeps trying despite difficulty.",
+"error analysis":"A teacher collects learners' errors and sorts them to find their causes.",
+"contrastive analysis":"Comparing the Korean and English sound systems to predict which English sounds will be difficult.",
+"wait time":"After asking a question, the teacher counts silently to five before choosing a student.",
+"information gap":"Student A has half of a map and Student B has the other half; they must talk to complete it.",
+"jigsaw":"Each student reads a different part of a text and then teaches it to the group.",
+"drilling":"Repeating 'I'm going to the library' with different place nouns until it becomes automatic.",
+"concept checking":"After teaching 'tired', the teacher asks 'Do you feel tired after running? Do you feel tired after sleeping?'",
+"clarification request":"A teacher says 'Sorry? Could you say that again?' in response to an unclear learner sentence.",
+"peer review":"Students exchange essays and comment on each other's drafts.",
+"think-aloud":"A learner reads a passage and says aloud what she is thinking at each step."
+};
+WORDS.forEach(w=>{if(PH[w.w]&&!w.ph)w.ph=PH[w.w];});
+})();
+
+(function(){
+const G={
+"음운론·음성학":"phoneme,allophone,fricative,affricate,plosive,assimilation,elision,epenthesis,intonation,suprasegmental,diphthong,aspiration,voicing,minimal pair,phonotactics,schwa,flapping,palatalization,glottal stop,linking,stress-timed,syllable-timed,metathesis,rhotic,place of articulation,manner of articulation,voiceless,coarticulation,nasalization,dissimilation,haplology,free variation,complementary distribution,distinctive feature,sonority,syllabic consonant,intrusive r,TH-fronting,yod-dropping",
+"형태론·어휘론":"morpheme,inflection,derivation,compounding,affix,allomorph,clitic,infix,circumfix,endocentric compound,exocentric compound,cranberry morpheme,eponym,calque,loanword,ablaut,lexical gap,folk etymology",
+"통사론":"transitive,ellipsis,specifier,wh-movement,raising,control,garden-path sentence,center embedding,unaccusative,unergative,pro-drop,dangling modifier,reflexive pronoun,parallel structure,negative polarity item,selectional restriction",
+"의미론":"homonym,polysemy,hyponym,collocation,idiom,euphemism,metonymy,connotation,synonym,homophone,homograph,antonym,hypernym,meronym,gradable,complementary pair,converse,broadening,narrowing,pejoration,amelioration,tautology,vagueness,contradiction,epistemic modality,deontic modality",
+"화용론":"anaphora,deixis,presupposition,implicature,speech act,face,positive face,negative face,face-threatening act,locutionary act,illocutionary act,perlocutionary act,performative,felicity condition,indirect speech act,turn-taking,adjacency pair,back-channel,repair,hedge,scalar implicature,conversational maxim,phatic communion,pragmatic transfer",
+"담화·텍스트":"cohesion,discourse,coherence,discourse marker,cataphora,exophora,substitution,theme-rheme",
+"사회언어학":"register,dialect,code-switching,diglossia,pidgin,creole,lingua franca,idiolect,sociolect,linguistic relativity,language shift,overt prestige,covert prestige,speech accommodation,matched-guise test,isogloss,dialect continuum,language death,heritage language,code-mixing,language planning,vernacular,language contact",
+"심리언어학·언어 습득":"aphasia,Broca's aphasia,Wernicke's aphasia,lateralization,babbling,holophrastic stage,telegraphic speech,overextension,underextension,child-directed speech,spoonerism,tip-of-the-tongue phenomenon,priming,lexical access,overgeneralization",
+"역사언어학·언어 일반":"etymology,language family,Grimm's law,sound change,diachronic,synchronic,grammatical gender,arbitrariness,duality of patterning,displacement,Great Vowel Shift,grammaticalization",
+"제2언어 습득(SLA)":"interlanguage,fossilization,comprehensible input,affective filter,negotiation of meaning,recast,elicitation,noticing,transfer,avoidance,U-shaped learning,monitor hypothesis,input hypothesis,output hypothesis,interaction hypothesis,natural order,contrastive analysis,error analysis,zone of proximal development,scaffolding,clarification request",
+"평가":"formative assessment,summative,rubric,washback,validity,reliability,cloze test,portfolio,criterion-referenced,norm-referenced,diagnostic,placement test,peer review",
+"교수법·수업 기법":"immersion,task-based,communicative competence,behaviorism,audiolingual,grammar-translation,direct method,total physical response,suggestopedia,content-based,genre-based,process writing,cooperative learning,deductive,inductive,drilling,jigsaw,information gap,concept checking,wait time,mnemonic,chunk,fluency,accuracy,authentic",
+"읽기 교육":"skimming,scanning,top-down,bottom-up,schema,extensive reading,intensive reading,think-aloud",
+"학습자 요인(동기 등)":"extrinsic,intrinsic,integrative,instrumental,self-efficacy"
+};
+const M={};Object.keys(G).forEach(g=>G[g].split(',').forEach(t=>M[t]=g));
+WORDS.forEach(w=>{if(w.ph)w.sub=(w.cat==='ling'?'영어학':'영어교육')+(M[w.w]?' · '+M[w.w]:'');});
+})();
+
+(function(){const MB={
+"allegory":"moral","irony":"contrast","simile":"unlike","foreshadowing":"narrative","soliloquy":"alone","protagonist":"conflict","antagonist":"force","satire":"exaggeration","motif":"image","allusion":"indirect","unreliable":"narrator","stanza":"poem","sonnet":"fourteen-line","alliteration":"consonant","onomatopoeia":"sound","paradox":"truth","oxymoron":"combines","juxtaposition":"contrasting","epiphany":"sudden",
+"phoneme":"smallest","allophone":"predictable","morpheme":"grammatical","syntax":"phrases","pragmatics":"interpretation","fricative":"friction","affricate":"fricative","plosive":"airflow","assimilation":"neighboring","elision":"syllable","epenthesis":"vowel","intonation":"attitude","suprasegmental":"stress","diphthong":"syllable","inflection":"number","derivation":"affixes","compounding":"morphemes","affix":"prefix","allomorph":"environment","clause":"predicate","complement":"adjective","anaphora":"pronoun","deixis":"utterance","presupposition":"negated","implicature":"conversational","speech act":"promising","register":"formality","dialect":"social","code-switching":"conversation","polysemy":"multiple","hyponym":"included","collocation":"chance","idiom":"fixed","grammaticalization":"lexical","phonotactics":"permitted","aspiration":"puff","voicing":"vocal","minimal pair":"differ","transitive":"direct","ellipsis":"recovered","cohesion":"lexical","discourse":"spoken","lexicon":"mental","morphology":"formation","phonology":"patterns",
+"interlanguage":"native","fossilization":"permanent","comprehensible input":"understandable","affective filter":"anxiety","scaffolding":"teacher","zone of proximal development":"gap","negotiation of meaning":"interaction","recast":"reformulation","uptake":"corrective","elicitation":"self-correct","formative assessment":"ongoing","summative":"unit","rubric":"performance","authentic":"materials","communicative competence":"social","task-based":"lesson","immersion":"subject","mnemonic":"device","extrinsic":"external","intrinsic":"interest","differentiated instruction":"tailoring","learner autonomy":"learning","peer feedback":"comments","washback":"test","validity":"measures","reliability":"raters","cognate":"common","transfer":"second","noticing":"conscious","explicit":"rules","implicit":"conscious","deductive":"examples","inductive":"infer","chunk":"sequence","fluency":"pauses","accuracy":"degree","cooperative learning":"goals",
+"articulation":"organs","bilabial":"both","alveolar":"ridge","velar":"tongue","glottal":"vocal","palatal":"raised","labiodental":"lower","interdental":"tip","approximant":"narrowing","liquid":"partial","glide":"consonant","sibilant":"high-pitched","syllable":"pronunciation","onset":"cluster","coda":"cluster","schwa":"mid-central","rhotic":"accent","flapping":"between","vowel reduction":"weakening","connected speech":"linking","linking":"word-final","stress":"syllable","prefix":"affix","suffix":"affix","conversion":"class","blending":"combining","clipping":"longer","acronym":"letters","back-formation":"removing","bound morpheme":"stand","free morpheme":"stand","lexeme":"abstract","root":"core","stem":"affixes","constituent":"sentence","noun phrase":"pronoun","predicate":"clause","adjunct":"optional","modifier":"limits","agreement":"number","tense":"situation","aspect":"completion","modality":"necessity","auxiliary":"main","voice":"receiver","ditransitive":"direct",
+"binding":"antecedents","recursion":"structure","ambiguity":"possible","entailment":"truth","antonym":"meaning","connotation":"emotional","denotation":"dictionary","metonymy":"closely","euphemism":"mild","taboo":"social","pidgin":"simplified","creole":"pidgin","sociolinguistics":"relationship","psycholinguistics":"processes","bilingualism":"languages","diglossia":"varieties","lingua franca":"communication","critical period":"window","universal grammar":"innate","overgeneralization":"rule","phonetics":"scientific","nasal":"velum","lateral":"tongue","consonant cluster":"syllable","monophthong":"vowel","tense vowel":"duration","lax vowel":"tension","stress-timed":"intervals","syllable-timed":"syllable","nuclear stress":"pitch","palatalization":"pronounced","metathesis":"swap","glottal stop":"closing","inflectional morpheme":"bound","derivational morpheme":"bound","suppletion":"different","portmanteau":"sounds","reduplication":"word-formation","productivity":"affix","content word":"lexical","function word":"relations","open class":"category","closed class":"rarely","head":"phrase","phrase structure":"hierarchical","deep structure":"underlying","surface structure":"spoken","transformation":"syntactic","subcategorization":"kinds","argument structure":"predicate","theta role":"noun","agent":"deliberately","patient":"directly","complementizer":"embedded","relative clause":"noun","subordination":"depends","coordination":"joins","gerund":"verb","participle":"verb","infinitive":"base","finite":"agreement","nonfinite":"subject","passive":"construction","cleft sentence":"highlight","topicalization":"topic","inversion":"auxiliary","existential":"construction","synonym":"nearly","homophone":"sound","homograph":"spelled","semantic field":"related","componential analysis":"breaking","prototype":"typical","conceptual metaphor":"experience","reference":"relationship","sense":"abstract","gradable":"degrees","complementary pair":"denial","converse":"relation","meronym":"larger","hypernym":"specific","semantic change":"shift","broadening":"meaning","narrowing":"meaning","pejoration":"acquires","amelioration":"acquires","proposition":"statement","tautology":"repeats","cooperative principle":"helpful","politeness":"offending","face":"interaction","face-threatening act":"damage","positive face":"approved","negative face":"imposed","locutionary act":"meaningful","illocutionary act":"requesting","perlocutionary act":"listener","performative":"action","felicity condition":"requirement","indirect speech act":"intended","turn-taking":"speaking","adjacency pair":"speakers","back-channel":"listener","repair":"problem","hedge":"definite","discourse marker":"signals","coherence":"connection","accent":"distinctive","idiolect":"individual","sociolect":"social","standard language":"widely","prestige":"attached","linguistic relativity":"structure","speech community":"share","language shift":"gradual","World Englishes":"English",
+"L1 interference":"negative","avoidance":"strategy","simplification":"reduction","restructuring":"mental","U-shaped learning":"worse","monitor hypothesis":"editor","acquisition-learning hypothesis":"conscious","i+1":"input","pushed output":"forces","focus on form":"attention","focus on forms":"grammar","corrective feedback":"errors","explicit correction":"correct","communicative language teaching":"approach","silent way":"teacher","community language learning":"learners","lexical approach":"multiword","PPP":"presentation","authentic material":"purposes","realia":"objects","graded reader":"proficiency","gist":"details","inference":"conclusion","think-aloud":"thoughts","graphic organizer":"relationships","brainstorming":"judging","peer review":"each","product approach":"imitation","backward design":"planning","learning outcome":"lesson","can-do statement":"ability","CEFR":"European","needs analysis":"learners","syllabus":"course",
+"learner-centered":"students","teacher-centered":"source","flipped learning":"class","blended learning":"classroom","project-based learning":"extended","English as a lingua franca":"first","reflective teaching":"improve","action research":"problems","peer observation":"lessons","mixed-ability class":"students","IRF":"initiation","display question":"question","referential question":"teacher","elicit":"responses","choral repetition":"model","backchaining":"sentence","multiple intelligences":"independent","Bloom's taxonomy":"classification","growth mindset":"effort","willingness to communicate":"discourse","ideal L2 self":"vision","ought-to L2 self":"expectations","item analysis":"questions","item difficulty":"proportion","discrimination index":"scorers","inter-rater reliability":"scorers","face validity":"claims","content validity":"material","construct validity":"underlying","performance assessment":"skills","self-assessment":"progress","alternative assessment":"paper-and-pencil","dynamic assessment":"guided","holistic scoring":"score","analytic scoring":"criteria","input hypothesis":"understanding","output hypothesis":"grammar","interaction hypothesis":"negotiation","natural order":"sequence","language acquisition device":"innate","behaviorism":"stimulus","audiolingual":"repetition","grammar-translation":"texts","direct method":"without","total physical response":"actions","suggestopedia":"music","content-based":"instruction","genre-based":"features","process writing":"drafting","pre-task":"prepares","warm-up":"activity","skimming":"quickly","scanning":"locate","top-down":"background","bottom-up":"letters","schema":"organized","extensive reading":"general","intensive reading":"analyze","dictation":"aloud","cloze test":"passage","portfolio":"progress","criterion-referenced":"performance","norm-referenced":"compares","diagnostic":"strengths","placement test":"assign","practicality":"administration","authenticity":"tasks","motivation":"persistence","integrative":"community","instrumental":"benefits","anxiety":"worry","self-efficacy":"succeed","learning strategy":"deliberate","metacognition":"thinking","learning style":"processing","aptitude":"natural","error analysis":"systematic","contrastive analysis":"predict","self-correction":"error","teacher talk":"special","classroom management":"maintain","lesson plan":"objectives","objective":"learners","wait time":"calling","pair work":"twos","information gap":"communicate","role-play":"imagined","jigsaw":"shared","drilling":"automaticity","modeling":"demonstrating","concept checking":"confirm","feedback":"learners","metalinguistic":"explicit","clarification request":"repetition",
+"imagery":"pictures","symbolism":"objects","personification":"human","hyperbole":"emphasis","understatement":"deliberately","pathos":"arouses","catharsis":"tragedy","tragic flaw":"downfall","hubris":"ruin","denouement":"plot","climax":"turning","exposition":"background","flashback":"timeline","setting":"story","theme":"underlying","tone":"audience","point of view":"story","stream of consciousness":"continuous","epigraph":"quotation","prologue":"introductory","epilogue":"concluding","elegy":"mourning","ode":"lyric","ballad":"narrative","couplet":"successive","blank verse":"pentameter","iambic pentameter":"unstressed","meter":"stressed","rhyme scheme":"sounds","enjambment":"sentence","assonance":"vowel","consonance":"consonant","romanticism":"nature","modernism":"experimental","realism":"society","gothic":"horror","bildungsroman":"novel","dystopia":"society","utopia":"society","comic relief":"humorous","foil":"traits","archetype":"universal","anachronism":"modern","canon":"works","homonym":"form","metaphor":"figure"};
+const esc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+WORDS.forEach(w=>{const k=MB[w.w];if(!k||!w.df)return;
+  const parts=w.df.split(/(\{[^}]*\})/);let done=false;
+  for(let i=0;i<parts.length&&!done;i+=2){
+    const re=new RegExp('(^|[^A-Za-z-])('+esc(k)+')(?![A-Za-z-])','i');
+    if(re.test(parts[i])){parts[i]=parts[i].replace(re,(m,a,b)=>a+'{'+b+'}');done=true;}
+  }
+  if(done)w.df=parts.join('');
+});
+})();
+
 (function(){const E=new Set(["absolute", "abstract", "accessible", "accordingly", "accumulate", "accurate", "acquire", "adapt", "adhere", "adjacent", "adjust", "affirm", "agenda", "aggregate", "alert", "alien", "alliance", "allocate", "ally", "alter", "amateur", "ambitious", "analogous", "analogy", "anticipate", "appetite", "appreciate", "appropriate", "arena", "array", "articulate", "artificial", "ashamed", "assembly", "assert", "assess", "asset", "assign", "assume", "attain", "attentive", "attribute", "autonomy", "await", "awkward", "barely", "bargain", "barrier", "bias", "blessing", "blueprint", "boast", "bold", "breakthrough", "bribe", "burden", "campaign", "capacity", "casual", "cease", "chaos", "chaotic", "characteristic", "cherish", "chore", "circumstance", "civic", "clarify", "clash", "cling", "clumsy", "collaborate", "commence", "commit", "commodity", "compassion", "compatible", "compile", "complex", "compose", "comprehensive", "comprise", "compromise", "conceal", "concise", "concrete", "condemn", "conduct", "confrontation", "conquer", "consensus", "consequence", "consequently", "considerable", "constant", "constrain", "constraint", "consume", "consumption", "contemplate", "contemporary", "contradiction", "contrary", "controversy", "convention", "convey", "cope", "corridor", "counterpart", "crisis", "criterion", "crossroads", "crucial", "curriculum", "debris", "decay", "decline", "deem", "deficit", "delegate", "demolish", "demonstrate", "dense", "despair", "destiny", "detour", "devote", "devotion", "diagnose", "diagnosis", "dilemma", "disgrace", "dismiss", "dispose", "dispute", "distract", "diverse", "domain", "domestic", "dominate", "drain", "dreadful", "drought", "dwell", "dwelling", "eager", "ecosystem", "elegant", "eligible", "eliminate", "elite", "embrace", "emission", "emphasize", "enact", "enclose", "encompass", "encounter", "endure", "engage", "enhance", "enormous", "enrich", "ensure", "enterprise", "entity", "epidemic", "equip", "era", "erosion", "erupt", "essence", "essential", "estimate", "eternal", "ethical", "ethics", "evaluate", "evident", "evolve", "exaggerate", "exceed", "exceptional", "excessive", "exclude", "exclusive", "exhaust", "exhibit", "exotic", "expedition", "expertise", "expose", "exposure", "extend", "faint", "fatal", "fatigue", "feat", "fertile", "fierce", "flaw", "flexible", "foe", "fraction", "fragile", "fragment", "framework", "fraud", "frequent", "friction", "frontier", "fulfill", "furthermore", "gadget", "generate", "genre", "genuine", "gesture", "gigantic", "glimpse", "glossary", "gradual", "grave", "guarantee", "guideline", "habitat", "halt", "hardly", "harsh", "hasten", "haunt", "hazard", "heed", "hence", "heritage", "hesitant", "hierarchy", "humble", "hurdle", "hypothesis", "identical", "ideology", "idle", "ignorant", "illuminate", "illusion", "illustrate", "imitate", "immense", "implement", "impress", "impulse", "incentive", "incorporate", "incredible", "inequality", "infer", "inflation", "ingredient", "inhabit", "inhabitant", "inheritance", "initiate", "inject", "injustice", "innovation", "inquire", "insert", "insight", "inspire", "install", "instinct", "institution", "integrate", "integrity", "intense", "interpret", "interrupt", "interval", "intervene", "intimate", "invade", "isolate", "justify", "keen", "landmark", "launch", "legacy", "legislation", "lessen", "loyal", "maintain", "mandatory", "margin", "massive", "mature", "medium", "mentor", "merely", "merge", "merit", "methodology", "migrate", "milestone", "minimize", "minority", "miserable", "misery", "moderate", "modify", "monitor", "monopoly", "monotonous", "moral", "moreover", "motive", "mourn", "mutual", "myth", "naive", "nasty", "neglect", "negotiate", "nevertheless", "noble", "nonetheless", "notably", "notion", "nourish", "numerous", "nurture", "obedient", "objective", "obligation", "obstacle", "obtain", "occupy", "offspring", "omit", "opponent", "optimal", "outbreak", "outlook", "outstanding", "overcome", "overlook", "penalty", "perceive", "perception", "permanent", "perspective", "persuade", "phenomenal", "phenomenon", "pledge", "plunge", "portion", "pose", "postpone", "precede", "predecessor", "prejudice", "preserve", "primarily", "primitive", "priority", "privilege", "procedure", "prohibit", "promising", "promote", "prompt", "proportion", "prospect", "prosper", "provision", "pursuit", "ratio", "rational", "readily", "rebellion", "recession", "reckless", "recruit", "refrain", "refuge", "regain", "regime", "reinforce", "reject", "relieve", "relish", "remarkable", "remote", "render", "renowned", "reside", "resolve", "restless", "restore", "restrain", "restrict", "resume", "retain", "reveal", "revenue", "rigid", "ritual", "rotate", "sacred", "scandal", "scatter", "scenario", "segment", "seize", "sensible", "sentiment", "severe", "shallow", "shatter", "shed", "shortage", "simultaneously", "skeleton", "slender", "slogan", "soar", "sober", "solely", "solitary", "spare", "spectrum", "sphere", "spur", "stabilize", "steep", "stereotype", "stern", "stimulate", "stimulus", "strain", "strive", "stubborn", "stumble", "sturdy", "submit", "substantial", "substitute", "sufficient", "superb", "superior", "supreme", "suspend", "sustain", "swift", "symptom", "synthesis", "tackle", "tactic", "temporary", "tenant", "tender", "terrain", "texture", "thorough", "thoroughly", "threshold", "token", "tolerate", "trait", "transform", "transition", "trauma", "tribute", "trigger", "triumph", "trivial", "ultimate", "urge", "urgent", "utility", "utilize", "vague", "valid", "validate", "vanish", "vast", "vendor", "venture", "verbal", "verdict", "verify", "vessel", "veteran", "vicinity", "virtual", "virtue", "vivid", "vocation", "vow", "voyage", "wage", "wander", "warfare", "warrant", "weave", "welfare", "wholesome", "wicked", "withdraw", "withhold", "workforce", "worship", "yearn"]);WORDS.forEach(w=>{if(w.cat==='read'&&E.has(w.w))w.easy=1;});})();
 
 (function(){const seen={};for(let i=0;i<WORDS.length;i++){const k=WORDS[i].w;if(seen[k]){WORDS.splice(i,1);i--;}else seen[k]=1;}})();
@@ -3303,8 +3626,8 @@ const stageOf=n=>{let k=0;STAGE_AT.forEach((t,i)=>{if(n>=t)k=i;});return k+1;};
 /* ===================== STATE ===================== */
 const KEY='imyong-danyeo-whale-v1';
 let canStore=true;
-const fresh=()=>({v:1,set:{daily:20,cats:CAT_DEFAULT.slice(),known:Object.keys(CATS),types:['mc','short','cloze','def','dcloze'],typesV2:true,exam:'',hard:true,enMajor:true},
-  learned:{},wrong:{},master:{},marks:{},att:{},today:null,custom:[],stats:{answered:0,correct:0}});
+const fresh=()=>({v:1,set:{daily:20,cats:CAT_DEFAULT.slice(),known:Object.keys(CATS),types:['mc','short','cloze','def','dcloze','dmulti','phen'],typesV2:true,typesV3:true,mockN:10,mockSec:30,exam:'',hard:true,enMajor:true},
+  learned:{},wrong:{},master:{},marks:{},att:{},today:null,custom:[],mocks:[],hide:{},stats:{answered:0,correct:0}});
 function load(){
   try{const r=localStorage.getItem(KEY); if(r){return migrate(JSON.parse(r));}}
   catch(e){canStore=false;}
@@ -3318,6 +3641,9 @@ function migrate(p){
   if(!o.set.cats.length)o.set.cats=CAT_DEFAULT.slice();
   o.set.known=Object.keys(CATS);
   if(!o.set.typesV2){['def','dcloze'].forEach(t=>{if(!o.set.types.includes(t))o.set.types.push(t);});o.set.typesV2=true;}
+  if(!o.set.typesV3){['dmulti','phen'].forEach(t=>{if(!o.set.types.includes(t))o.set.types.push(t);});o.set.typesV3=true;}
+  if(!Array.isArray(o.mocks))o.mocks=[];
+  if(!o.hide||typeof o.hide!=='object')o.hide={};
   if(o.today&&o.today.ids&&o.today.ids.some(id=>!BY[id]))o.today=null;
   if(!Array.isArray(o.custom))o.custom=[];
   if(p.set&&p.set.hard===undefined&&o.today&&!o.today.studyDone)o.today=null;
@@ -3478,6 +3804,22 @@ function syncText(){
   if(SYNC.status==='signedout')return '로그인하면 켜져요. 폰과 컴퓨터에서 같은 계정으로 로그인하세요.';
   return '준비 중이에요.';
 }
+function syncChip(){
+  const t=SYNC.last?new Date(SYNC.last).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}):'';
+  let c='',x='';
+  if(SYNC.on){
+    if(SYNC.status==='big'){c='bad';x='⚠ 기록이 커서 동기화 불가';}
+    else if(SYNC.status==='err'){c='bad';x='⚠ 동기화 오류';}
+    else if(SYNC.dirty||SYNC.busy){c='warn';x='☁ 저장 중…';}
+    else{c='ok';x='☁ 동기화됨'+(t?' · '+t:'');}
+  }else if(SYNC.status==='connecting'){c='warn';x='☁ 연결 중…';}
+  else if(SYNC.status==='err'){c='bad';x='⚠ 연결 안 됨 · 이 기기에만 저장';}
+  else if(SYNC.status==='nocfg'){x='☁ 동기화 꺼짐 · 설정하기';}
+  else if(SYNC.status==='signedout'){x='☁ 로그인 필요';}
+  else x='☁ 이 기기에만 저장';
+  return `<button class="schip ${c}" id="schip" data-a="sync-chip">${x}</button>`;
+}
+setInterval(()=>{if(view!=='home')return;const e=document.getElementById('schip');if(e&&!document.querySelector('.veil'))e.outerHTML=syncChip();},2000);
 function syncCard(){
   let body='';
   if(!IN_CLAUDE()){
@@ -3513,7 +3855,9 @@ const dfHtml=w=>(w.df||'').replace(/\{(.+?)\}/g,'<mark>$1</mark>');
 const dfPlain=w=>(w.df||'').replace(/\{(.+?)\}/g,'$1');
 const dfBlank=w=>(w.df||'').replace(/\{(.+?)\}/,'<span class="blank"></span>').replace(/\{(.+?)\}/g,'$1');
 const dfTarget=w=>((w.df||'').match(/\{(.+?)\}/)||[0,''])[1];
-const targetOf=(it,w)=>it.type==='cloze'?exTarget(w):it.type==='dcloze'?dfTarget(w):w.w;
+const dfKeys=w=>[...(w.df||'').matchAll(/\{(.+?)\}/g)].map(m=>m[1]);
+const dfBlankAll=w=>{let i=0;return (w.df||'').replace(/\{(.+?)\}/g,()=>`<span class="blank"></span><sup class="bn">${++i}</sup>`);};
+const targetOf=(it,w)=>it.type==='cloze'?exTarget(w):it.type==='dcloze'?dfTarget(w):it.type==='dmulti'?dfKeys(w).join(' / '):w.w;
 const MAJOR={ling:1,edu:1,lit:1};
 const isM=w=>!!(MAJOR[w.cat]&&w.df&&S.set.enMajor!==false);
 const exTarget=w=>((w.ex||'').match(/\{(.+?)\}/)||[0,w.w])[1];
@@ -3521,15 +3865,17 @@ const norm=s=>s.toLowerCase().replace(/[-–]/g,' ').replace(/[^a-z' ]/g,'').rep
 const A=()=>{const d=TODAY();return S.att[d]||(S.att[d]={words:0,qtot:0,qok:0,rev:0});};
 const streak=()=>{let d=TODAY();if(!S.att[d])d=addDays(d,-1);let n=0;while(S.att[d]){n++;d=addDays(d,-1);}return n;};
 const bestStreak=()=>{let b=0,c=0,p=null;Object.keys(S.att).sort().forEach(k=>{c=p&&diffDays(k,p)===1?c+1:1;b=Math.max(b,c);p=k;});return b;};
-const dueList=()=>Object.keys(S.wrong).filter(id=>S.wrong[id].due<=TODAY()&&BY[id]);
-const learnedCount=()=>Object.keys(S.learned).filter(k=>BY[k]).length;
+const hiddenN=()=>Object.keys(S.hide||{}).filter(k=>BY[k]).length;
+const visN=()=>WORDS.length-hiddenN();
+const dueList=()=>Object.keys(S.wrong).filter(id=>S.wrong[id].due<=TODAY()&&BY[id]&&!S.hide[id]);
+const learnedCount=()=>Object.keys(S.learned).filter(k=>BY[k]&&!S.hide[k]).length;
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),1800);}
 function speak(w){try{const u=new SpeechSynthesisUtterance(w);u.lang='en-US';u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u);}catch(e){toast('이 기기에서는 발음 재생을 지원하지 않아요');}}
 
 function makePlan(batch){
   const n=S.set.daily, cats=S.set.cats.length?S.set.cats:Object.keys(CATS);
   const hash=t=>{let h=7;for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))>>>0;return h;};
-  const groups=cats.map(c=>{const g=WORDS.filter(w=>w.cat===c&&!S.learned[w.w]&&!(c==='read'&&S.set.hard!==false&&w.easy));return c==='read'?g.sort((a,b)=>hash(a.w)-hash(b.w)):g;});
+  const groups=cats.map(c=>{const g=WORDS.filter(w=>w.cat===c&&!S.hide[w.w]&&!S.learned[w.w]&&!(c==='read'&&S.set.hard!==false&&w.easy));return c==='read'?g.sort((a,b)=>hash(a.w)-hash(b.w)):g;});
   const ids=[];let i=0;
   const wt=cats.map(c=>c==='read'?2:1);
   while(ids.length<n&&groups.some((g,gi)=>g.length>i*wt[gi])){groups.forEach((g,gi)=>{for(let j=0;j<wt[gi];j++){const w=g[i*wt[gi]+j];if(w&&ids.length<n)ids.push(w.w);}});i++;}
@@ -3591,7 +3937,7 @@ function home(){
     ${t.studyDone&&!t.quizDone?'<button class="btn block" data-a="start-study-again">카드 한 번 더 보기</button>':''}`;
   }
   return `
-  <div class="head"><h1>단끼리</h1><button class="icon-btn" data-a="nav" data-v="settings" aria-label="설정">⚙</button></div>
+  <div class="head"><h1>단끼리</h1><div class="row" style="gap:8px">${syncChip()}<button class="icon-btn" data-a="nav" data-v="settings" aria-label="설정">⚙</button></div></div>
   <div class="card hero"><div class="hero-art">${elephantSvg(stg)}</div>
     <div class="grow"><div class="muted small">연속 출석 ${dd}</div><div class="streak">${st}<span class="small muted" style="font-family:var(--font-body)"> 일</span></div>
     <div class="small" style="margin-top:6px"><b>${title}</b> · Lv.${lv}</div>
@@ -3602,7 +3948,7 @@ function home(){
     <p class="muted small">${due?'오답노트에서 복습 시기가 된 단어예요. 맞히면 간격이 늘어나요 (1→3→7→14→30일).':'오늘 복습할 단어가 없어요. 오늘 퀴즈에서 틀린 단어는 내일부터 복습 대상이 돼요.'}</p>
     ${due?'<button class="btn primary block" data-a="start-review">복습 퀴즈 시작</button>':''}</div>
   <div class="card col"><h2 class="disp" style="font-size:19px">이번 주</h2><div class="strip">${strip}</div>
-    <div class="pbar"><div class="row between small"><span>전체 진도</span><b>${lc} / ${WORDS.length}</b></div><div class="bar"><i style="width:${Math.round(lc/WORDS.length*100)}%"></i></div></div></div>
+    <div class="pbar"><div class="row between small"><span>전체 진도</span><b>${lc} / ${visN()}</b></div><div class="bar"><i style="width:${Math.round(lc/visN()*100)}%"></i></div></div></div>
   <p class="muted small" style="text-align:center;padding:0 12px">${MSG[Math.floor((Date.now()/864e5))%MSG.length]}</p>`;
 }
 
@@ -3631,13 +3977,30 @@ function study(){
   <div class="row act"><button class="btn bad grow" data-a="fuzzy">헷갈려요 ★</button><button class="btn primary grow" data-a="next-card">${last?(ST.src==='today'?'학습 완료':'마치기'):'알겠어요'}</button></div>
   <div class="row"><button class="btn grow" data-a="toggle-hide">${ST.hide?'뜻 보이기 모드':'뜻 가리기 모드'}</button>
    ${ST.idx>0?'<button class="btn" data-a="prev-card">이전</button>':''}</div>
-  <div class="kbd">좌우로 밀어서 넘기기 · 키보드 ← → Space · S 발음 · B 북마크</div>`;
+  <div class="row between"><div class="kbd" style="padding:0">좌우로 밀어서 넘기기 · S 발음 · B 북마크</div><button class="tiny" data-a="hide-card">단어 숨기기</button></div>`;
 }
 
+function mockSetup(){
+  const pool=PEND.pool,N=[10,20,30].map(n=>Math.min(n,pool.length)).filter((n,i,a)=>a.indexOf(n)===i);
+  if(!N.includes(S.set.mockN))S.set.mockN=N[N.length-1]>=10?(N.includes(10)?10:N[0]):N[0];
+  const n=S.set.mockN,sec=S.set.mockSec||30,tot=n*sec,fm=t=>Math.floor(t/60)+'분'+(t%60?' '+t%60+'초':'');
+  return `
+  <div class="top"><button class="icon-btn" data-a="back-home" aria-label="뒤로">‹</button><h1 class="disp" style="font-size:26px">오답노트 모의고사</h1></div>
+  <div class="card col"><div class="big">${n}문제 · ${fm(tot)}</div>
+   <p class="muted small">오답노트에서 많이 틀린 단어부터 뽑아요. 시간이 끝나면 못 푼 문제는 오답 처리돼요. 힌트는 없어요.</p>
+   <label class="lbl">문제 수 (오답노트 ${pool.length}개)</label>
+   <div class="toggle">${N.map(x=>`<button class="${x===n?'on':''}" data-a="mock-n" data-n="${x}">${x}문제</button>`).join('')}</div>
+   <label class="lbl">문제당 제한시간</label>
+   <div class="toggle">${[20,30,45,60].map(x=>`<button class="${x===sec?'on':''}" data-a="mock-sec" data-n="${x}">${x}초</button>`).join('')}</div>
+   <p class="muted small">맞히면 기록만 남고, 틀리면 복습 간격이 1일로 돌아가요. 문제 유형은 설정의 유형 선택을 따라요.</p>
+  </div>
+  <button class="btn primary block" data-a="start-mock-quiz">모의고사 시작</button>`;
+}
 function qsetup(){
+  if(PEND.mode==='mock')return mockSetup();
   const n=PEND.ids.length,ty=S.set.types;
-  const titles={daily:'오늘의 퀴즈',review:'복습 퀴즈',practice:'연습 퀴즈',retry:'틀린 문제 다시 풀기'};
-  const T=[['mc','객관식','뜻 ↔ 단어 4지선다'],['short','단답형','뜻을 보고 영단어 쓰기'],['cloze','예문 빈칸 채우기','예문의 빈칸에 알맞은 형태 쓰기'],['def','정의 → 용어 쓰기','정의를 보고 용어 쓰기 (영어학·교육 용어)'],['dcloze','정의 빈칸 채우기','정의 속 핵심어 채우기 (영어학·교육 용어)']];
+  const titles={daily:'오늘의 퀴즈',review:'복습 퀴즈',practice:'연습 퀴즈',retry:'틀린 문제 다시 풀기',mock:'오답노트 모의고사'};
+  const T=[['mc','객관식','뜻 ↔ 단어 4지선다'],['short','단답형','뜻을 보고 영단어 쓰기'],['cloze','예문 빈칸 채우기','예문의 빈칸에 알맞은 형태 쓰기'],['def','정의 → 용어 쓰기','정의를 보고 용어 쓰기 (영어학·교육 용어)'],['dcloze','정의 빈칸 채우기','정의 속 핵심어 채우기 (영어학·교육 용어)'],['dmulti','정의 빈칸 (여러 개)','정의의 빈칸 2개 이상을 모두 채우기'],['phen','예시 → 용어','분야가 표시된 예시를 보고 용어 맞히기']];
   return `
   <div class="top"><button class="icon-btn" data-a="back-home" aria-label="뒤로">‹</button><h1 class="disp" style="font-size:26px">${titles[PEND.mode]}</h1></div>
   <div class="card col"><div class="big">${n}문제</div><p class="muted small">문제 유형을 고르세요. 여러 개를 고르면 단어마다 섞어서 출제돼요.</p>
@@ -3648,20 +4011,25 @@ function qsetup(){
 
 function buildQ(id,types){
   const w=BY[id];
-  const okT=types.filter(x=>x==='mc'||x==='short'||(x==='cloze'&&/\{.+?\}/.test(w.ex||''))||((x==='def'||x==='dcloze')&&w.df));
+  const okT=types.filter(x=>x==='mc'||x==='short'||(x==='cloze'&&/\{.+?\}/.test(w.ex||''))||((x==='def'||x==='dcloze')&&w.df)||(x==='dmulti'&&dfKeys(w).length>1)||(x==='phen'&&w.ph));
   let t=pick(okT.length?okT:['mc']);
+  if(t==='phen'&&Math.random()<.45){
+    let pool=shuffle(WORDS.filter(x=>x.w!==w.w&&!S.hide[x.w]&&x.cat===w.cat&&x.ph));
+    if(pool.length<3)pool=shuffle(WORDS.filter(x=>x.w!==w.w&&!S.hide[x.w]&&x.cat===w.cat));
+    return {id,type:'mc',dir:'p2t',opts:shuffle([w].concat(pool.slice(0,3))).map(o=>o.w)};
+  }
   if(isM(w)){
     if(t==='short')t='def';
     if(t==='mc'){
       const dir=Math.random()<.5?'d2t':'t2d';
-      let pool=shuffle(WORDS.filter(x=>x.w!==w.w&&x.cat===w.cat&&x.df));
+      let pool=shuffle(WORDS.filter(x=>x.w!==w.w&&!S.hide[x.w]&&x.cat===w.cat&&x.df));
       const opts=shuffle([w].concat(pool.slice(0,3)));
       return {id,type:'mc',dir,opts:opts.map(o=>o.w)};
     }
   }
   if(t==='mc'){
     const dir=Math.random()<.5?'en2ko':'ko2en';
-    let pool=shuffle(WORDS.filter(x=>x.w!==w.w&&x.ko!==w.ko));
+    let pool=shuffle(WORDS.filter(x=>x.w!==w.w&&!S.hide[x.w]&&x.ko!==w.ko));
     const sc=x=>(x.pos===w.pos?2:0)+(x.cat===w.cat?1:0);
     pool.sort((a,b)=>sc(b)-sc(a));
     const opts=shuffle([w].concat(pool.slice(0,3)));
@@ -3670,18 +4038,34 @@ function buildQ(id,types){
   return {id,type:t};
 }
 
+const fmtT=t=>Math.floor(t/60)+':'+String(t%60).padStart(2,'0');
+setInterval(()=>{
+  if(view!=='quiz'||!Q||Q.mode!=='mock')return;
+  const rem=Math.ceil((Q.deadline-Date.now())/1000),e=document.getElementById('qtimer');
+  if(e){e.textContent=fmtT(Math.max(0,rem));e.classList.toggle('low',rem<=30);}
+  if(rem<=0)mockTimeout();
+},500);
+function mockTimeout(){
+  const start=Q.answered?Q.idx+1:Q.idx;
+  for(let i=start;i<Q.items.length;i++){
+    const id=Q.items[i].id;Q.res.push({id,ok:false});S.stats.answered++;
+    const c=BY[id].cat,cs=S.stats.cat||(S.stats.cat={}),o=cs[c]||(cs[c]={a:0,c:0});o.a++;
+    A().qtot++;applyEffect(id,false);
+  }
+  toast('시간이 끝났어요');finishQuiz();
+}
 function quiz(){
   const it=Q.items[Q.idx],w=BY[it.id],n=Q.items.length,ans=Q.answered,L=Q.last||{};
   const head=`<div class="top"><button class="icon-btn" data-a="leave-quiz" aria-label="그만두기">✕</button>
-   <div class="bar"><i style="width:${Math.round((Q.idx+(ans?1:0))/n*100)}%"></i></div><div class="count">${Q.idx+1} / ${n}</div></div>`;
+   <div class="bar"><i style="width:${Math.round((Q.idx+(ans?1:0))/n*100)}%"></i></div><div class="count">${Q.idx+1} / ${n}</div>${Q.mode==='mock'?`<div class="timer" id="qtimer">${fmtT(Math.max(0,Math.ceil((Q.deadline-Date.now())/1000)))}</div>`:''}</div>`;
   let body='';
   if(it.type==='mc'){
-    const en=it.dir==='d2t'||it.dir==='t2d';
+    const en=it.dir==='d2t'||it.dir==='t2d'||it.dir==='p2t';
     const ko=it.dir==='en2ko';
     if(en){
-      const d2t=it.dir==='d2t';
-      body=`<div class="qprompt">${d2t?'Choose the term that matches the definition':'Choose the definition that matches the term'}</div>
-       <div class="qmain ${d2t?'sent':''}">${d2t?dfPlain(w):`${w.w}<div class="ipa" style="font-size:16px;font-weight:400">${w.ipa} · ${w.pos}</div>`}</div>
+      const d2t=it.dir==='d2t'||it.dir==='p2t',p2t=it.dir==='p2t';
+      body=`<div class="qprompt">${p2t?'Which term fits this example?':d2t?'Choose the term that matches the definition':'Choose the definition that matches the term'}</div>
+       ${p2t?`<div class="chip" style="align-self:flex-start;white-space:normal">${w.sub||CATS[w.cat]}</div>`:''}<div class="qmain ${d2t?'sent':''}">${p2t?w.ph:d2t?dfPlain(w):`${w.w}<div class="ipa" style="font-size:16px;font-weight:400">${w.ipa} · ${w.pos}</div>`}</div>
        <div class="opts">${it.opts.map((o,i)=>{
          const ow=BY[o];let c='';
          if(ans){if(o===w.w)c='right';else if(L.given===o)c='wrong';}
@@ -3696,15 +4080,20 @@ function quiz(){
   }else{
     const target=targetOf(it,w);
     const cls=ans?(L.ok?'right':'wrong'):'';
-    const prompts={cloze:'빈칸에 알맞은 형태로 쓰세요',short:'뜻에 맞는 영단어를 쓰세요',def:'다음 정의에 해당하는 용어를 쓰세요',dcloze:'정의의 빈칸에 알맞은 핵심어를 쓰세요'};
+    const prompts={cloze:'빈칸에 알맞은 형태로 쓰세요',short:'뜻에 맞는 영단어를 쓰세요',def:'다음 정의에 해당하는 용어를 쓰세요',dcloze:'정의의 빈칸에 알맞은 핵심어를 쓰세요',dmulti:'정의의 빈칸을 번호 순서대로 모두 채우세요',phen:'이 예시가 가리키는 용어를 쓰세요'};
     const main={cloze:`<div class="qmain sent">${exBlank(w)}</div><div class="chip" style="align-self:flex-start;white-space:normal">${isM(w)?w.pos+' · '+dfPlain(w):w.pos+' · '+w.ko}</div>`,
       short:`<div class="qmain ko">${w.ko}<div class="muted small" style="font-weight:400">${w.pos}</div></div>`,
       def:`<div class="qmain sent">${dfPlain(w)}</div>`,
-      dcloze:`<div class="chip" style="align-self:flex-start">용어 · ${w.w}</div><div class="qmain sent">${dfBlank(w)}</div>`}[it.type];
+      dcloze:`<div class="chip" style="align-self:flex-start">용어 · ${w.w}</div><div class="qmain sent">${dfBlank(w)}</div>`,
+      dmulti:`<div class="chip" style="align-self:flex-start">용어 · ${w.w}</div><div class="qmain sent">${dfBlankAll(w)}</div>`,
+      phen:`<div class="chip" style="align-self:flex-start;white-space:normal">${w.sub||CATS[w.cat]}</div><div class="qmain sent">${w.ph}</div>`}[it.type];
+    const keys=it.type==='dmulti'?dfKeys(w):null,gv=L.given||'',gvs=gv.split(' / ');
+    const inputs=keys?keys.map((k,i)=>`<input id="ans${i}" class="inp ansf ${cls}" type="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="${i+1}번 빈칸" value="${ans?(gvs[i]||'').replace(/"/g,'&quot;'):''}" ${ans?'disabled':''} aria-label="${i+1}번 빈칸">`).join('')
+      :`<input id="ans" class="inp ansf ${cls}" type="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="영어로 입력" value="${ans?gv.replace(/"/g,'&quot;'):''}" ${ans?'disabled':''} aria-label="답 입력">`;
     body=`<div class="qprompt">${prompts[it.type]}</div>${main}
-     <input id="ans" class="inp ${cls}" type="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="영어로 입력" value="${ans?(L.given||'').replace(/"/g,'&quot;'):''}" ${ans?'disabled':''} aria-label="답 입력">
-     <div class="hintline" id="hint">${Q.hint&&!ans?hintText(target):''}</div>
-     ${ans?'':`<div class="row"><button class="btn" data-a="hint">힌트</button><button class="btn" data-a="skip">모르겠어요</button><button class="btn primary grow" data-a="submit">확인</button></div>`}`;
+     ${inputs}
+     <div class="hintline" id="hint">${Q.hint&&!ans?hintIt(it,w):''}</div>
+     ${ans?'':`<div class="row">${Q.mode==='mock'?'':'<button class="btn" data-a="hint">힌트</button>'}<button class="btn" data-a="skip">모르겠어요</button><button class="btn primary grow" data-a="submit">확인</button></div>`}`;
   }
   let fb='';
   if(ans){
@@ -3712,14 +4101,16 @@ function quiz(){
     fb=`<div class="fb ${ok?'ok':'bad'}"><div class="v">${ok?'정답입니다':'오답이에요'}${!ok&&it.type!=='mc'?` · 정답: ${targetOf(it,w)}`:''}</div>
       ${L.note?`<div class="warn ${ok?'':'bad'}">${ok?'⚠':'✎'} ${L.note}${L.given?` <span class="muted">(입력: ${L.given.replace(/</g,'&lt;')})</span>`:''}</div>`:''}
       <div><b style="font-family:var(--font-latin);font-size:16px">${w.w}</b> <span class="ipa" style="font-size:15px">${w.ipa}</span> <button class="icon-btn" style="width:34px;height:34px;font-size:14px;display:inline-grid;vertical-align:middle" data-a="speak" data-w="${w.w}" aria-label="발음 듣기">🔊</button></div>
-      <div class="mean2"><b>${w.pos}</b> ${w.ko}</div>${w.df?`<div class="df">${dfHtml(w)}</div>`:''}${w.ex?`<div class="ex">${exHtml(w)}</div>`:''}
+      <div class="mean2"><b>${w.pos}</b> ${w.ko}</div>${w.df?`<div class="df">${dfHtml(w)}</div>`:''}${w.ex?`<div class="ex">${exHtml(w)}</div>`:''}${w.ph?`<div class="ex" style="border-left-color:var(--gold)"><b>${w.sub||'예시'}</b> ${w.ph}</div>`:''}
       ${!ok&&Q.mode==='daily'?'<div class="small muted">오답노트에 저장했어요. 내일 다시 복습해요.</div>':''}
       ${!ok&&Q.mode==='review'?'<div class="small muted">복습 간격이 1일로 돌아가요.</div>':''}
       ${ok&&Q.mode==='review'?'<div class="small muted">다음 단계로 올라갔어요.</div>':''}</div>
-      <button class="btn primary block" data-a="next-q" id="nextq">${Q.idx===n-1?'결과 보기':'다음 문제'}</button>`;
+      <button class="btn primary block" data-a="next-q" id="nextq">${Q.idx===n-1?'결과 보기':'다음 문제'}</button>
+      ${S.hide[w.w]?'':`<div style="text-align:right"><button class="tiny" data-a="hide-q">단어 숨기기</button></div>`}`;
   }
   return `${head}<div class="card q">${body}</div>${fb}`;
 }
+const hintIt=(it,w)=>it.type==='dmulti'?dfKeys(w).map(hintText).join('   ·   '):hintText(targetOf(it,w));
 const hintText=t=>t[0]+' '+t.slice(1).replace(/[A-Za-z]/g,'_').split('').join(' ').replace(/  +/g,'   ')+'  ('+t.length+'자)';
 
 function result(){
@@ -3730,7 +4121,7 @@ function result(){
   <div class="card col" style="align-items:center;text-align:center">
    <div class="ring"><svg viewBox="0 0 150 150"><circle class="tr" cx="75" cy="75" r="62" fill="none" stroke-width="14"/><circle class="pr" cx="75" cy="75" r="62" fill="none" stroke-width="14" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${off}"/></svg><div>${ok}/${n}</div></div>
    <h2 class="disp" style="font-size:24px">${pct}점</h2><p class="muted">${msg}</p>
-   ${r.mode==='daily'?`<span class="chip ok">오늘 출석 완료 · 연속 ${streak()}일</span>`:''}
+   ${r.mode==='daily'?`<span class="chip ok">오늘 출석 완료 · 연속 ${streak()}일</span>`:''}${r.mode==='mock'?`<span class="chip">⏱ ${fmtT(r.sec)} 걸림</span>`:''}
   </div>
   ${wr.length?`<div class="card"><h3 class="disp" style="font-size:20px;margin-bottom:6px">틀린 단어 ${wr.length}개</h3><div class="wlist">${wr.map(x=>`<div><b>${x.id}</b><span class="muted">${BY[x.id].ko}</span></div>`).join('')}</div></div>`:''}
   ${wr.length?`<button class="btn primary block" data-a="retry-wrong">틀린 문제 바로 다시 풀기</button>`:''}
@@ -3762,6 +4153,7 @@ function review(){
    <p class="muted small">복습 간격은 1일 → 3일 → 7일 → 14일 → 30일. 맞히면 다음 단계로, 틀리면 처음으로 돌아가요. 5단계를 통과하면 졸업합니다.</p>
    <div class="row"><button class="btn primary grow" data-a="start-review" ${due.length?'':'disabled'}>퀴즈로 복습</button><button class="btn grow" data-a="review-cards" ${due.length?'':'disabled'}>카드로 복습</button></div></div>
   <div class="seg" role="tablist"><button class="${rv==='wrong'?'on':''}" data-a="rv" data-v="wrong">오답노트 ${wr.length}</button><button class="${rv==='mark'?'on':''}" data-a="rv" data-v="mark">북마크 ${mk.length}</button></div>
+  ${rv==='wrong'?`<button class="btn block" data-a="start-mock" ${wr.length>=3?'':'disabled'}>⏱ 오답노트 모의고사${wr.length>=3?'':' (오답 3개 이상부터)'}</button>${(S.mocks&&S.mocks.length)?`<p class="muted small" style="text-align:center">최근 모의고사 ${S.mocks.slice(-3).reverse().map(m=>`${m.ok}/${m.n}`).join(' · ')}</p>`:''}`:''}
   <div class="row"><button class="btn grow" data-a="list-quiz" ${ids.length?'':'disabled'}>이 목록 퀴즈 (${ids.length})</button><button class="btn grow" data-a="list-cards" ${ids.length?'':'disabled'}>이 목록 카드</button></div>
   <div class="card" style="padding:4px 16px">${list}</div>`;
 }
@@ -3769,16 +4161,18 @@ function review(){
 function badges(){
   const lc=learnedCount(),b=bestStreak(),perfect=S.perfect||Object.keys(S.att).some(k=>S.att[k].qtot>0&&S.att[k].qok===S.att[k].qtot),mc=Object.keys(S.master).length;
   return [['첫 출석','1',Object.keys(S.att).length>=1],['3일 연속','3',b>=3],['7일 연속','7',b>=7],['30일 연속','30',b>=30],
-   ['100단어','100',lc>=100],['300단어','300',lc>=300],['전체 완료','★',lc>=WORDS.length],['퀴즈 만점','100',perfect],['오답 졸업 10','10',mc>=10]];
+   ['100단어','100',lc>=100],['300단어','300',lc>=300],['전체 완료','★',lc>=visN()],['퀴즈 만점','100',perfect],['오답 졸업 10','10',mc>=10]];
 }
 
-let DQ={q:'',cat:'all',st:'all',lim:60};
+let DQ={q:'',cat:'all',st:'all',lim:60,arm:false};
 function wstat(id){return S.wrong[id]?'w':S.master[id]?'m':S.learned[id]?'l':'n';}
 function dictMatch(){
   const q=DQ.q.trim().toLowerCase();
   return WORDS.filter(w=>{
     if(DQ.cat!=='all'&&w.cat!==DQ.cat)return false;
     const st=wstat(w.w);
+    const hid=!!S.hide[w.w];
+    if(DQ.st==='hid'){if(!hid)return false;}else if(hid)return false;
     if(DQ.st==='new'&&st!=='n')return false;
     if(DQ.st==='learned'&&st==='n')return false;
     if(DQ.st==='wrong'&&st!=='w')return false;
@@ -3791,17 +4185,18 @@ function dictRow(w){
   const st=wstat(w.w);
   return `<details data-w="${w.w}"><summary><span class="col" style="gap:4px"><b><i class="st-dot ${st==='n'?'':st}"></i>${w.w}</b><span class="muted small">${w.ko}</span></span><span class="chip">${CATS[w.cat]}</span></summary>
    <div class="dbody"><div class="ipa">${w.ipa} · ${w.pos}</div>${w.df?`<div class="df">${dfHtml(w)}</div>`:''}${w.ex?`<div class="ex">${exHtml(w)}</div>`:''}
-   <div class="row"><button class="btn" data-a="speak" data-w="${w.w}">🔊 발음</button><button class="btn" data-a="bm" data-w="${w.w}">${S.marks[w.w]?'★ 북마크됨':'☆ 북마크'}</button></div></div></details>`;
+   <div class="row"><button class="btn" data-a="speak" data-w="${w.w}">🔊 발음</button><button class="btn" data-a="bm" data-w="${w.w}">${S.marks[w.w]?'★ 북마크됨':'☆ 북마크'}</button><button class="btn" data-a="${S.hide[w.w]?'unhide':'hide'}" data-w="${w.w}">${S.hide[w.w]?'↩ 숨김 해제':'🙈 숨기기'}</button></div></div></details>`;
 }
 function dictList(){
   const m=dictMatch(),shown=m.slice(0,DQ.lim);
   return `<div class="muted small" style="padding:10px 0 4px">${m.length}개${m.length>shown.length?` 중 ${shown.length}개 표시`:''}</div>`+
     (shown.length?shown.map(dictRow).join(''):'<p class="muted" style="padding:8px 0">검색 결과가 없어요.</p>')+
-    (m.length>shown.length?'<button class="btn block" data-a="dict-more" style="margin:10px 0">더 보기</button>':'');
+    (m.length>shown.length?'<button class="btn block" data-a="dict-more" style="margin:10px 0">더 보기</button>':'')+
+    (m.length&&(DQ.cat!=='all'||DQ.q.trim()||DQ.st==='hid')?`<button class="btn block ${DQ.arm?'bad':''}" data-a="${DQ.st==='hid'?'unhide-all':'hide-all'}" style="margin:10px 0">${DQ.arm?`정말 ${m.length}개 ${DQ.st==='hid'?'숨김 해제':'숨기기'}`:DQ.st==='hid'?`이 목록 ${m.length}개 모두 숨김 해제`:`이 목록 ${m.length}개 모두 숨기기`}</button>`:'');
 }
 function dict(){
   const cats=Object.keys(CATS).filter(c=>WORDS.some(w=>w.cat===c));
-  const sts=[['all','전체'],['new','새 단어'],['learned','학습함'],['wrong','오답'],['mark','★']];
+  const sts=[['all','전체'],['new','새 단어'],['learned','학습함'],['wrong','오답'],['mark','★'],['hid','숨김'+(hiddenN()?' '+hiddenN():'')]];
   return `
   <div class="head"><h1>단어장</h1></div>
   <input class="search" id="dq" type="search" placeholder="영단어·뜻·정의 검색" value="${DQ.q.replace(/"/g,'&quot;')}" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="단어 검색">
@@ -3823,7 +4218,7 @@ function stats(){
     cells+=`<button class="${a?(a.words>0&&a.qtot>0?'a2':'a1'):''} ${k===td?'now':''} ${k===calSel?'sel':''}" data-a="cal-day" data-d="${k}">${d}</button>`;}
   let sel='';if(calSel){const a=S.att[calSel];const p=parseD(calSel);
     sel=`<div class="small" style="margin-top:4px"><b>${p.getMonth()+1}월 ${p.getDate()}일</b> · ${a?`새 단어 ${a.words}개 · 퀴즈 ${a.qok}/${a.qtot} · 복습 ${a.rev}회`:'기록 없음'}</div>`;}
-  const catBars=Object.keys(CATS).map(c=>{const tot=WORDS.filter(w=>w.cat===c).length,l=WORDS.filter(w=>w.cat===c&&S.learned[w.w]).length;
+  const catBars=Object.keys(CATS).map(c=>{const tot=WORDS.filter(w=>w.cat===c&&!S.hide[w.w]).length,l=WORDS.filter(w=>w.cat===c&&!S.hide[w.w]&&S.learned[w.w]).length;
     if(!tot)return '';return `<div class="pbar"><div class="row between small"><span>${CATS[c]}</span><b>${l} / ${tot}</b></div><div class="bar ${l===tot?'ok':''}"><i style="width:${Math.round(l/tot*100)}%"></i></div></div>`;}).join('');
   const cs=S.stats.cat||{};
   const accRows=Object.keys(CATS).filter(c=>cs[c]&&cs[c].a>=5).map(c=>({c,a:cs[c].a,p:Math.round(cs[c].c/cs[c].a*100)})).sort((x,y)=>x.p-y.p);
@@ -3850,13 +4245,13 @@ function stats(){
 }
 
 function settings(){
-  const s=S.set,types=[['mc','객관식'],['short','단답형'],['cloze','예문 빈칸'],['def','정의→용어'],['dcloze','정의 빈칸']];
+  const s=S.set,types=[['mc','객관식'],['short','단답형'],['cloze','예문 빈칸'],['def','정의→용어'],['dcloze','정의 빈칸'],['dmulti','빈칸 여러 개'],['phen','예시→용어']];
   return `
   <div class="top"><button class="icon-btn" data-a="back-home" aria-label="뒤로">‹</button><h1 class="disp" style="font-size:26px">설정</h1></div>
   <div class="card col"><label class="lbl">하루 학습 단어 수</label>
    <div class="stepper"><button class="icon-btn" data-a="daily" data-n="-5" aria-label="5개 줄이기">−</button><div class="v">${s.daily}</div><button class="icon-btn" data-a="daily" data-n="5" aria-label="5개 늘리기">+</button><span class="muted">개 / 일</span></div>
    <div class="toggle">${[10,20,30,50,100,200].map(n=>`<button class="${s.daily===n?'on':''}" data-a="daily-set" data-n="${n}">${n}</button>`).join('')}</div>
-   <p class="muted small">오늘 카드 학습을 마치기 전이면 바로 적용돼요. 마친 뒤에는 내일부터 적용돼요. 전체 ${WORDS.length}단어 기준 약 ${Math.ceil(WORDS.length/s.daily)}일이면 한 바퀴예요.</p></div>
+   <p class="muted small">오늘 카드 학습을 마치기 전이면 바로 적용돼요. 마친 뒤에는 내일부터 적용돼요. 전체 ${visN()}단어 기준 약 ${Math.ceil(WORDS.length/s.daily)}일이면 한 바퀴예요.</p></div>
   <div class="card col"><label class="lbl">학습 분야</label>
    <div class="toggle">${Object.keys(CATS).filter(c=>WORDS.some(w=>w.cat===c)).map(c=>`<button class="${s.cats.includes(c)?'on':''}" data-a="toggle-cat" data-c="${c}" aria-pressed="${s.cats.includes(c)}">${CATS[c]}</button>`).join('')}</div></div>
   ${syncCard()}
@@ -3870,8 +4265,10 @@ function settings(){
    <div class="toggle">${types.map(t=>`<button class="${s.types.includes(t[0])?'on':''}" data-a="toggle-type" data-t="${t[0]}" data-stay="1" aria-pressed="${s.types.includes(t[0])}">${t[1]}</button>`).join('')}</div></div>
   <div class="card col"><label class="lbl" for="imp">내 단어 추가 (${S.custom.length}개 등록됨)</label>
    <p class="muted small">한 줄에 한 단어. 칸은 | 로 나누세요. 발음기호·품사·예문은 비워도 돼요. 예문에서 빈칸이 될 부분은 {중괄호}로 감싸면 빈칸 문제로도 나와요.</p>
-   <textarea id="imp" placeholder="resilient | /rɪˈzɪliənt/ | adj. | 회복력 있는 | {Resilient} learners bounce back."></textarea>
-   <button class="btn" data-a="import">단어 추가하기</button>
+   <textarea id="imp" placeholder="resilient | /rɪˈzɪliənt/ | adj. | 회복력 있는 | {Resilient} learners bounce back.&#10;&#10;(단어만 적고 아래 '뜻 자동으로 채우기'를 눌러도 돼요)"></textarea>
+   <button class="btn" data-a="lookup" id="lkbtn">🔍 뜻 자동으로 채우기 (단어만 적은 줄)</button>
+   <p class="muted small" id="lkmsg">인터넷 사전에서 발음·품사·뜻·예문을 가져와요. 가져온 내용은 고쳐서 추가할 수 있어요.</p>
+   <button class="btn primary" data-a="import">단어 추가하기</button>
    ${S.custom.length?'<button class="btn" data-a="clear-custom">내 단어 모두 삭제</button>':''}</div>
   <div class="card col"><label class="lbl" for="exam">시험일 (D-day 표시)</label><input type="date" id="exam" value="${s.exam||''}"></div>
   <div class="card col"><label class="lbl">데이터 백업</label>
@@ -3897,7 +4294,7 @@ function render(){
   fitView();
   if(view==='quiz'){
     if(Q.answered){const e=document.getElementById('nextq');if(e){e.scrollIntoView({block:'nearest'});}}
-    else{const i=document.getElementById('ans');if(i)setTimeout(()=>i.focus({preventScroll:true}),30);}
+    else{const i=document.querySelector('.ansf');if(i)setTimeout(()=>i.focus({preventScroll:true}),30);}
   }
 }
 
@@ -3919,6 +4316,8 @@ function applyEffect(id,ok){
     const o=S.wrong[id];if(!o)return;
     if(ok){const b=o.box+1;if(b>=INT.length){delete S.wrong[id];S.master[id]=td;}else S.wrong[id]={box:b,due:addDays(td,INT[b]),miss:o.miss};}
     else S.wrong[id]={box:0,due:addDays(td,1),miss:o.miss+1};
+  }else if(Q.mode==='mock'){
+    if(!ok){const o=S.wrong[id];if(o)S.wrong[id]={box:0,due:addDays(td,1),miss:o.miss+1};}
   }
 }
 function answer(ok,given,note){
@@ -3929,7 +4328,8 @@ function answer(ok,given,note){
   applyEffect(Q.items[Q.idx].id,ok);save();render();
 }
 function finishQuiz(){
-  RES={mode:Q.mode,res:Q.res,ids:Q.res.filter(r=>!r.ok).map(r=>r.id)};
+  RES={mode:Q.mode,res:Q.res,ids:Q.res.filter(r=>!r.ok).map(r=>r.id),sec:Q.t0?Math.round((Date.now()-Q.t0)/1000):0};
+  if(Q.mode==='mock'){S.mocks=(S.mocks||[]).concat({d:TODAY(),n:Q.items.length,ok:Q.res.filter(r=>r.ok).length,sec:RES.sec}).slice(-20);}
   if(Q.mode==='daily'){S.today.quizDone=true;}
   if(Q.mode==='review')A().rev++;
   save();go('result');
@@ -3985,8 +4385,8 @@ function typoCheck(cv,ct,target){
   if(k.slip)return {ok:true,note:`오타로 봤어요(${k.kind}) · 정확한 표기는 ${target}`};
   return {ok:false,note:`한 글자 차이지만 오타가 아니라 철자 오류로 봤어요 · 정확한 표기는 ${target}`};
 }
-function grade(it,w,v){
-  const target=targetOf(it,w);
+function grade(it,w,v,tgt){
+  const target=tgt||targetOf(it,w);
   if(norm(v)===norm(target))return {ok:true};
   const cv=compact(v),ct=compact(target);
   if(!cv)return {ok:false};
@@ -4003,13 +4403,57 @@ function grade(it,w,v){
   return typoCheck(cv,ct,target);
 }
 function checkInput(){
-  const it=Q.items[Q.idx],w=BY[it.id],v=document.getElementById('ans').value;
+  const it=Q.items[Q.idx],w=BY[it.id];
+  if(it.type==='dmulti'){
+    const keys=dfKeys(w),vals=keys.map((k,i)=>(document.getElementById('ans'+i)||{value:''}).value);
+    if(vals.some(x=>!norm(x))){toast('모든 빈칸을 채워 주세요');return;}
+    const gs=keys.map((k,i)=>grade(it,w,vals[i],k)),all=gs.every(g=>g.ok),notes=[];
+    gs.forEach((g,i)=>{if(!g.ok)notes.push(`${i+1}번 빈칸 정답: ${keys[i]}${g.note&&/철자/.test(g.note)?' (철자 오류)':''}`);else if(g.note)notes.push(`${i+1}번 ${g.note}`);});
+    answer(all,vals.map(x=>x.trim()).join(' / '),notes.join(' · '));return;
+  }
+  const v=document.getElementById('ans').value;
   if(!norm(v)){toast('답을 입력해 주세요');return;}
   const target=targetOf(it,w);
   const g=grade(it,w,v);
   answer(g.ok,v.trim(),g.note);
 }
 
+/* ---- word lookup (web dictionaries; needs internet) ---- */
+async function fetchJ(url,ms){const c=new AbortController(),t=setTimeout(()=>c.abort(),ms||7000);try{const r=await fetch(url,{signal:c.signal});if(!r.ok)throw new Error('http');return await r.json();}finally{clearTimeout(t);}}
+const POS_EN={noun:'n.',verb:'v.',adjective:'adj.',adverb:'adv.',preposition:'prep.',conjunction:'conj.',pronoun:'pron.',interjection:'interj.'};
+const POS_KO={'명사':'n.','동사':'v.','형용사':'adj.','부사':'adv.','전치사':'prep.','접속사':'conj.','대명사':'pron.','감탄사':'interj.'};
+async function lookupWord(word){
+  const out={w:word,ipa:'',pos:'',ko:'',ex:'',ok:false};let enPos='';
+  try{
+    const j=await fetchJ('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(word));
+    const e=Array.isArray(j)?j[0]:null;
+    if(e){
+      let ipa=e.phonetic||'';
+      if(!ipa||!/[\/\[]/.test(ipa)){const p=(e.phonetics||[]).find(x=>x.text);if(p)ipa=p.text;}
+      out.ipa=ipa&&!/^\/.*\/$/.test(ipa)?'/'+ipa.replace(/^[\[\/]|[\]\/]$/g,'')+'/':ipa;
+      const m=(e.meanings||[])[0];if(m){enPos=m.partOfSpeech||'';out.pos=POS_EN[enPos]||'';}
+      for(const mm of (e.meanings||[])){if(enPos&&mm.partOfSpeech!==enPos)continue;const d=(mm.definitions||[]).find(x=>x.example);if(d){out.ex=d.example;break;}}
+      out.ok=true;
+    }
+  }catch(e){}
+  try{
+    const j=await fetchJ('https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ko&dt=t&dt=bd&q='+encodeURIComponent(word));
+    const bd=j&&j[1];
+    if(bd&&bd.length){
+      let ent=bd.find(x=>POS_KO[x[0]]===out.pos)||bd[0];
+      if(!out.pos)out.pos=POS_KO[ent[0]]||'';
+      out.ko=(ent[1]||[]).slice(0,3).join(', ');
+    }
+    if(!out.ko&&j&&j[0]&&j[0][0])out.ko=j[0][0][0]||'';
+    if(out.ko)out.ok=true;
+  }catch(e){}
+  if(!out.ko){
+    try{const j=await fetchJ('https://api.mymemory.translated.net/get?q='+encodeURIComponent(word)+'&langpair=en|ko');
+      const t=j&&j.responseData&&j.responseData.translatedText;if(t&&!/MYMEMORY|QUERY LENGTH/i.test(t)){out.ko=t;out.ok=true;}}catch(e){}
+  }
+  if(out.ex){const re=new RegExp('\\b('+word.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'[a-z]*)','i');out.ex=re.test(out.ex)?out.ex.replace(re,'{$1}'):out.ex;}
+  return out;
+}
 const H={
  nav:d=>{resetArm=false;go(d.v);},
  'back-home':()=>go('home'),
@@ -4018,6 +4462,12 @@ const H={
  'start-daily-quiz':()=>openQuiz(S.today.ids,'daily'),
  'more-batch':()=>{const p=makePlan(S.today.batch+1);if(!p.ids.length){toast('남은 새 단어가 없어요');return;}S.today=p;save();go('home');toast('새 단어 '+p.ids.length+'개를 준비했어요');},
  'start-review':()=>openQuiz(dueList(),'review'),
+ 'start-mock':()=>{const pool=Object.keys(S.wrong).filter(k=>BY[k]).sort((a,b)=>(S.wrong[b].miss-S.wrong[a].miss)||S.wrong[a].due.localeCompare(S.wrong[b].due));if(pool.length<3){toast('오답이 3개 이상 있어야 해요');return;}PEND={mode:'mock',pool,ids:[]};go('qsetup');},
+ 'mock-n':d=>{S.set.mockN=Number(d.n);save();render();},
+ 'mock-sec':d=>{S.set.mockSec=Number(d.n);save();render();},
+ 'start-mock-quiz':()=>{
+   const n=S.set.mockN,sec=S.set.mockSec||30,ids=shuffle(PEND.pool.slice(0,n));
+   Q={mode:'mock',items:ids.map(id=>buildQ(id,S.set.types)),idx:0,answered:false,last:null,res:[],hint:false,t0:Date.now(),deadline:Date.now()+ids.length*sec*1000};go('quiz');},
  'review-cards':()=>startCards(dueList(),'review'),
  rv:d=>{rv=d.v;render();},
  'list-quiz':()=>{const ids=rv==='wrong'?Object.keys(S.wrong):Object.keys(S.marks);openQuiz(ids.filter(k=>BY[k]),'practice');},
@@ -4027,14 +4477,27 @@ const H={
  fuzzy:()=>{S.marks[ST.ids[ST.idx]]=TODAY();save();H['next-card']();},
  bm:d=>{if(S.marks[d.w])delete S.marks[d.w];else S.marks[d.w]=TODAY();save();
   if(view==='dict'){document.querySelectorAll(`#dlist [data-a="bm"][data-w="${CSS.escape(d.w)}"]`).forEach(b=>b.textContent=S.marks[d.w]?'★ 북마크됨':'☆ 북마크');if(DQ.st==='mark')dictRefresh();}else render();},
- dcat:d=>{DQ.cat=d.v;DQ.lim=60;dictRefresh();},
- dst:d=>{DQ.st=d.v;DQ.lim=60;dictRefresh();},
+ dcat:d=>{DQ.cat=d.v;DQ.lim=60;DQ.arm=false;dictRefresh();},
+ dst:d=>{DQ.st=d.v;DQ.lim=60;DQ.arm=false;dictRefresh();},
  'dict-more':()=>{DQ.lim+=60;dictRefresh();},
  'fb-save':()=>{const c=parseFbConfig(document.getElementById('fbcfg').value);if(!c){toast('apiKey, projectId, appId가 들어 있는 설정을 붙여넣어 주세요');return;}try{localStorage.setItem(FBKEY,JSON.stringify(c));}catch(e){}location.reload();},
  'fb-clear':()=>{try{localStorage.removeItem(FBKEY);}catch(e){}location.reload();},
  'fb-in':()=>fbAuth('in'),
  'fb-up':()=>fbAuth('up'),
  'fb-logout':async()=>{try{await FB.lib.auth.signOut(FB.auth);toast('로그아웃했어요');}catch(e){}},
+ hide:d=>{hideWords([d.w]);if(view==='dict')dictRefresh();else render();toast('숨겼어요. 단어장 > 숨김에서 되돌릴 수 있어요');},
+ unhide:d=>{delete S.hide[d.w];save();if(view==='dict')dictRefresh();toast('숨김을 해제했어요');},
+ 'hide-all':()=>{const m=dictMatch();if(!DQ.arm){DQ.arm=true;dictRefresh();return;}DQ.arm=false;hideWords(m.map(w=>w.w));dictRefresh();toast(m.length+'개를 숨겼어요');},
+ 'unhide-all':()=>{const m=dictMatch();if(!DQ.arm){DQ.arm=true;dictRefresh();return;}DQ.arm=false;m.forEach(w=>delete S.hide[w.w]);save();dictRefresh();toast(m.length+'개 숨김을 해제했어요');},
+ 'hide-card':()=>{
+   const id=ST.ids[ST.idx];hideWords([id],true);ST.ids.splice(ST.idx,1);
+   if(ST.src==='today'&&S.today){const k=S.today.ids.indexOf(id);if(k>=0)S.today.ids.splice(k,1);S.today.idx=Math.min(ST.idx,S.today.ids.length);save();}
+   toast('숨겼어요. 단어장 > 숨김에서 되돌릴 수 있어요');
+   if(!ST.ids.length){go('home');return;}
+   if(ST.idx>=ST.ids.length){ST.idx=ST.ids.length-1;finishCards();return;}
+   ST.rev=false;render();},
+ 'hide-q':()=>{const id=Q.items[Q.idx].id;hideWords([id]);toast('숨겼어요. 다음 퀴즈부터 나오지 않아요');render();},
+ 'sync-chip':()=>{if(SYNC.on){H['sync-now']();}else go('settings');},
  'sync-now':async()=>{if(!SYNC.on){toast('동기화를 쓸 수 없는 상태예요');return;}toast('동기화 중…');try{const ch=await syncPull();await syncPush();SYNC.last=Date.now();if(ch)ensureToday();render();toast(ch?'다른 기기의 기록을 불러왔어요':'동기화 완료');}catch(e){SYNC.status='err';render();toast('동기화에 실패했어요');}},
  'hard-toggle':()=>{S.set.hard=S.set.hard===false;replan();save();render();},
  'enmajor-toggle':()=>{S.set.enMajor=S.set.enMajor===false;save();render();},
@@ -4048,7 +4511,7 @@ const H={
    Q={mode:PEND.mode,items:PEND.ids.map(id=>buildQ(id,S.set.types)),idx:0,answered:false,last:null,res:[],hint:false};go('quiz');},
  opt:d=>{if(Q.answered)return;answer(d.o===Q.items[Q.idx].id,d.o);},
  submit:()=>{if(!Q.answered)checkInput();},
- hint:()=>{const it=Q.items[Q.idx],w=BY[it.id];Q.hint=true;document.getElementById('hint').textContent=hintText(targetOf(it,w));},
+ hint:()=>{const it=Q.items[Q.idx],w=BY[it.id];Q.hint=true;document.getElementById('hint').textContent=hintIt(it,w);},
  skip:()=>{if(!Q.answered)answer(false,'');},
  'next-q':()=>{if(Q.idx>=Q.items.length-1){finishQuiz();return;}Q.idx++;Q.answered=false;Q.last=null;Q.hint=false;render();window.scrollTo(0,0);},
  'leave-quiz':()=>{go('home');toast('진행한 결과까지만 저장됐어요');},
@@ -4066,6 +4529,22 @@ const H={
      S.custom.push({w:p[0],ipa:p[1]||'',pos:p[2]||'',ko:p[3],ex:p[4]||''});added++;});
    applyCustom();if(added&&!S.set.cats.includes('my'))S.set.cats.push('my');
    if(added)replan();save();render();toast(added?`${added}개 추가했어요`+(skip?` (${skip}줄 건너뜀)`:''):'형식을 확인해 주세요: 단어 | 발음 | 품사 | 뜻 | 예문');},
+ lookup:async()=>{
+   const ta=document.getElementById('imp'),btn=document.getElementById('lkbtn'),msg=document.getElementById('lkmsg');
+   const lines=ta.value.split('\n'),todo=lines.map((l,i)=>({l:l.trim(),i})).filter(x=>x.l&&!x.l.includes('|'));
+   if(!todo.length){toast('단어만 적은 줄이 없어요. 한 줄에 단어 하나씩 적어 주세요');return;}
+   btn.disabled=true;let okN=0,failN=0;
+   for(let k=0;k<todo.length;k++){
+     msg.textContent=`찾는 중… (${k+1}/${todo.length}) ${todo[k].l}`;
+     const w=todo[k].l.replace(/\s+/g,' ');
+     const r=await lookupWord(w);
+     if(r.ko||r.ipa){lines[todo[k].i]=[w,r.ipa,r.pos,r.ko,r.ex].join(' | ');if(r.ko)okN++;else failN++;}
+     else{failN++;}
+     ta.value=lines.join('\n');
+   }
+   btn.disabled=false;
+   msg.textContent=failN?`${okN}개 완성, ${failN}개는 뜻을 찾지 못했어요. 인터넷 연결을 확인하거나 직접 입력해 주세요.`:`${okN}개 완성했어요. 내용을 확인하고 '단어 추가하기'를 눌러 주세요.`;
+ },
  'clear-custom':()=>{S.custom=[];applyCustom();S.set.cats=S.set.cats.filter(c=>c!=='my');if(!S.set.cats.length)S.set.cats=CAT_DEFAULT.slice();Object.keys(S.learned).forEach(k=>{if(!BY[k])delete S.learned[k];});replan();save();render();toast('삭제했어요');},
  'toggle-cat':d=>{const c=S.set.cats,i=c.indexOf(d.c);if(i>=0){if(c.length>1)c.splice(i,1);else toast('분야는 하나 이상 선택해야 해요');}else c.push(d.c);replan();save();render();},
  backup:()=>{const txt=JSON.stringify(S);try{navigator.clipboard.writeText(txt).then(()=>toast('백업 데이터를 복사했어요'),()=>fallbackBackup(txt));}catch(e){fallbackBackup(txt);}},
@@ -4073,6 +4552,7 @@ const H={
  reset:()=>{if(!resetArm){resetArm=true;render();return;}resetArm=false;S=fresh();S.epoch=Date.now();save();toast('초기화했어요');go('home');}
 };
 function fallbackBackup(txt){const t=document.getElementById('bk');if(t){t.value=txt;t.select();toast('아래 상자의 내용을 직접 복사해 주세요');}}
+function hideWords(ids,keepPlan){ids.forEach(id=>{S.hide[id]=TODAY();delete S.wrong[id];delete S.marks[id];});if(!keepPlan&&S.today&&!S.today.studyDone)replan();save();}
 function setDaily(n){S.set.daily=Math.max(5,Math.min(200,n));replan();save();render();}
 function replan(){if(S.today&&!S.today.studyDone&&S.today.date===TODAY()){S.today=makePlan(S.today.batch);}}
 
@@ -4081,7 +4561,7 @@ document.addEventListener('click',e=>{
   const f=H[a.dataset.a];if(f)f(a.dataset,e);
 });
 document.addEventListener('change',e=>{if(e.target.id==='exam'){S.set.exam=e.target.value;save();toast(e.target.value?'시험일을 저장했어요':'시험일을 지웠어요');}});
-document.addEventListener('input',e=>{if(e.target.id==='dq'){DQ.q=e.target.value;DQ.lim=60;dictRefresh();}});
+document.addEventListener('input',e=>{if(e.target.id==='dq'){DQ.arm=false;DQ.q=e.target.value;DQ.lim=60;dictRefresh();}});
 let tx=null,ty=null;
 document.addEventListener('touchstart',e=>{if(view!=='study'||e.touches.length!==1)return;tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
 document.addEventListener('touchend',e=>{
@@ -4100,7 +4580,9 @@ document.addEventListener('keydown',e=>{
   }
   if(view!=='quiz'||e.key!=='Enter')return;
   if(Q.answered){e.preventDefault();H['next-q']();}
-  else if(e.target.id==='ans'){e.preventDefault();checkInput();}
+  else if(/^ans\d*$/.test(e.target.id||'')){e.preventDefault();
+    const all=[...document.querySelectorAll('.ansf')],k=all.indexOf(e.target);
+    if(k>=0&&k<all.length-1&&!all[k+1].value)all[k+1].focus();else checkInput();}
 });
 
 /* ---- keep the study card a fixed size: shrink the text inside instead ---- */
